@@ -3,7 +3,7 @@ RedisWebManager
 ===============
 <p align="center"><img src="https://img.xiebruce.top/2018/12/14/a46a7759709cc3ee33f407e4cf1fa8c1.jpg" title="Xnip2018-12-14_00-22-03.jpg" alt="Xnip2018-12-14_00-22-03.jpg"></p>
 
-## 中文版本/Chineses Version
+## 中文版本/Chinese Version
 [中文版本](https://www.xiebruce.top/664.html)
 
 ## Features
