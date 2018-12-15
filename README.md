@@ -81,6 +81,10 @@ server {
 }
 ```
 
+## Attention
+The pagination is correct when search keyword is not null, because redis can't get the total number of matched keys, so I am always using the total number of keys of current db, but this won't intervene you using this tool.
+
+
 ## Update Log
 ### 2018-12-14 v0.1
 - A tool that allows you to search, delete, batch delete redis key, preview value of key, flush current db or flush or db.
