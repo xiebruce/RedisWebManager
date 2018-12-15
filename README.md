@@ -9,6 +9,7 @@ RedisWebManager
 ## Features
 - View the redis key list
 - Preview value of certain key(popup or in new page)
+- Preview json as array, serialized object as an object(the most important reason I wrote this tool)
 - Search by key prefix or suffix
 - Delete one key & batch delete
 - Select to show which db
