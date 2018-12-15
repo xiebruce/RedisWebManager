@@ -16,9 +16,10 @@ if($_SERVER['REMOTE_ADDR']=='127.0.0.1'){
 
 $config = [
     'id' => 'basic',
+	'name' => 'RedisWebManager',
     'basePath' => dirname(__DIR__),
     'bootstrap' => ['log'],
-	'defaultRoute' => 'index',
+	// 'defaultRoute' => 'index',
     'aliases' => [
         '@bower' => '@vendor/bower-asset',
         '@npm'   => '@vendor/npm-asset',

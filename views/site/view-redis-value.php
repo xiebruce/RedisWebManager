@@ -13,14 +13,14 @@ $action = $this->context->action->id;
     body{
         /*background: #fff3d3;*/
     }
-    .container{
-        max-width: 90%;
-        font-size:14px;
-        margin:20px auto 0 auto;
+    .container {
+	    max-width: 99%;
+	    font-size: 14px;
     }
     .container .key-type{
         height:40px;
-        line-height: 40px;
+        line-height: 20px;
+	    margin-bottom: 10px;
     }
     .container .value{
         /*border:1px solid #ccc;*/
@@ -41,10 +41,18 @@ $action = $this->context->action->id;
         <input type="hidden" name="keyword" value="<?=$keyword?>">
         <button type="submit" class="btn btn-primary pull-left search-btn">Search</button>
     </form>
-    <div class="key-type">Key Type: <?=$type?></div>
+    <div class="key-type">
+	    <div>KeyType : <?=$key_type?></div>
+	    <?php if($value_type):?>
+		    <div>valueType : <?=$value_type?></div>
+	    <?php endif;?>
+    </div>
     <div class="value">
         <pre>
-            <?php print_r($value)?>
+            <?php
+	            $str = print_r($value, true);
+	            echo $str;
+            ?>
         </pre>
     </div>
 </div>

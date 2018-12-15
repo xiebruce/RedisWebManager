@@ -7,7 +7,6 @@ use app\widgets\Alert;
 use yii\helpers\Html;
 use yii\bootstrap\Nav;
 use yii\bootstrap\NavBar;
-use yii\widgets\Breadcrumbs;
 use app\assets\AppAsset;
 
 AppAsset::register($this);
@@ -21,6 +20,14 @@ AppAsset::register($this);
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <?= Html::csrfMetaTags() ?>
     <title><?= Html::encode($this->title) ?></title>
+	
+	<script src="/js/jquery.min.js"></script>
+	<script src="/bootstrap-3.3.7-dist/js/bootstrap.js"></script>
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="/bootstrap-3.3.7-dist/css/bootstrap.min.css">
+	<!-- Optional theme -->
+	<link rel="stylesheet" href="/bootstrap-3.3.7-dist/css/bootstrap-theme.min.css">
+	<link rel="icon" href="/images/redis-ico.png" sizes="192x192">
     <?php $this->head() ?>
 </head>
 <body>
@@ -38,9 +45,9 @@ AppAsset::register($this);
     echo Nav::widget([
         'options' => ['class' => 'navbar-nav navbar-right'],
         'items' => [
-            ['label' => 'Home', 'url' => ['/site/index']],
-            ['label' => 'About', 'url' => ['/site/about']],
-            ['label' => 'Contact', 'url' => ['/site/contact']],
+            // ['label' => 'Home', 'url' => ['/site/index']],
+            // ['label' => 'About', 'url' => ['/site/about']],
+            // ['label' => 'Contact', 'url' => ['/site/contact']],
             Yii::$app->user->isGuest ? (
                 ['label' => 'Login', 'url' => ['/site/login']]
             ) : (
@@ -59,9 +66,6 @@ AppAsset::register($this);
     ?>
 
     <div class="container">
-        <?= Breadcrumbs::widget([
-            'links' => isset($this->params['breadcrumbs']) ? $this->params['breadcrumbs'] : [],
-        ]) ?>
         <?= Alert::widget() ?>
         <?= $content ?>
     </div>
@@ -69,8 +73,7 @@ AppAsset::register($this);
 
 <footer class="footer">
     <div class="container">
-        <p class="pull-left">&copy; My Company <?= date('Y') ?></p>
-
+        <p class="pull-left">&copy; Bruce Xie <?= date('Y') ?></p>
         <p class="pull-right"><?= Yii::powered() ?></p>
     </div>
 </footer>

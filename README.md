@@ -28,6 +28,12 @@ RedisWebManager/config/params.php
 RedisWebManager/config/params_local.php
 ```
 
+## Login Account Config
+```
+RedisWebManager/models/User.php
+```
+<p align="center"><img src="https://img.xiebruce.top/2018/12/14/c1269f612b28ea8c2bbad37dd272741e.jpg" title="Xnip2018-12-14_14-56-49.jpg" alt="Xnip2018-12-14_14-56-49.jpg"></p>
+
 ## Nginx Config
 ```nginx
 server {
