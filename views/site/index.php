@@ -70,7 +70,7 @@ $quickSearch = Yii::$app->params['quickSearch'];
     }
 </style>
 
-<form class="table-responsive" id="key-list" action="">
+<div class="table-responsive" id="key-list" action="">
     <div class="container">
         <table class="table table-hover table-striped table-bordered table-condensed">
             <thead>
@@ -100,10 +100,10 @@ $quickSearch = Yii::$app->params['quickSearch'];
             </tr>
             <tr>
                 <th colspan="3">
-                    <div>
+                    <form>
                         <input type="input" name="keyword" placeholder="Please enter keyword" class="form-control pull-left keyword" value="<?=$keyword?>">
                         <button type="submit" class="btn btn-primary pull-left search-btn">Search</button>
-                    </div>
+                    </form>
                 </th>
             </tr>
             <tr>
@@ -166,7 +166,7 @@ $quickSearch = Yii::$app->params['quickSearch'];
             </tbody>
         </table>
     </div>
-</form>
+</div>
 <div class="text-center">
     <?php
     if($pagination){
@@ -222,7 +222,7 @@ $quickSearch = Yii::$app->params['quickSearch'];
         });
 
         // Preview value of the key
-        $('.key-name').click(function (){
+        $('.key-name').on('click', function (){
             var $this = $(this);
             if($this.attr('isclick')==1){
                 return false;
@@ -248,7 +248,7 @@ $quickSearch = Yii::$app->params['quickSearch'];
 	                    if(responseText.value_type!==''){
 		                    str += 'valueType => '+responseText.value_type+"\n";
 	                    }
-                        str += "-------------------------------------------------------------------\n"
+                        str += "-------------------------------------------------------------------\n";
 	                    str += responseText.value;
                         alert(str);
                     }
@@ -258,7 +258,7 @@ $quickSearch = Yii::$app->params['quickSearch'];
         });
 
         // Select all
-        $('.select-all').click(function (e){
+        $('.select-all').on('click', function (e){
             $('#key-list table input[type="checkbox"]').prop('checked',$(this).prop('checked'));
             e.stopPropagation();
         });
@@ -304,7 +304,7 @@ $quickSearch = Yii::$app->params['quickSearch'];
         });
 
         // stop anchor from bubbling
-        $('#key-list table tr input[type="checkbox"],#key-list table tr a').click(function (e){
+        $('#key-list table tr input[type="checkbox"],#key-list table tr a').on('click', function (e){
             e.stopPropagation();
         });
 
@@ -355,7 +355,7 @@ $quickSearch = Yii::$app->params['quickSearch'];
         });
 
         // flushDB or flushAll
-        $('.flush-db,.flush-all').click(function (){
+        $('.flush-db,.flush-all').on('click', function (){
             if($(this).attr('isclick')==1){
                 return false;
             }
