@@ -7,7 +7,7 @@
  */
 
 $title = 'Redis Manager';
-if($visitor_ip=='127.0.0.1'){
+if($server_ip=='127.0.0.1'){
     $this->title = '[local]-'.$title;
 }else{
     $this->title = '[remote]-'.$title;
@@ -79,7 +79,7 @@ $quickSearch = Yii::$app->params['quickSearch'];
                     Redis Server Info:
                     <span style="font-weight: normal;">
                         <?php if($code==0):?>
-                            <span class="underline">server ip</span>：<span><?=$visitor_ip?></span> |
+                            <span class="underline">server ip</span>：<span><?=$server_ip?></span> |
                             <span class="underline">redis_version</span>: <span class="red"><?=$info['redis_version']?></span> |
                             <span class="underline">os</span>: <span class="red"><?=$info['os']?></span> |
                             <span class="underline">redis_mode</span>: <span class="red"><?=$info['redis_mode']?></span> |
@@ -92,7 +92,7 @@ $quickSearch = Yii::$app->params['quickSearch'];
                             <a href="javascript:void(0);" class="flush-db" title="Click to flush current db">FlushDB</a> |
                             <a href="javascript:void(0);" class="flush-all" title="Click to flush all db">FlushAll</a>
                         <?php else:?>
-                            <span class="underline">server ip</span>：<span><?=$visitor_ip?></span> |
+                            <span class="underline">server ip</span>：<span><?=$serverIp?></span> |
                             <span class="red"><?=$error_msg?></span>
                         <?php endif;?>
                     </span>

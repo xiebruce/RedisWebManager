@@ -163,7 +163,7 @@ class SiteController extends BaseController
 
 		}*/
 		
-		$visitor_ip = Yii::$app->request->remoteIP;
+		$serverIp = $_SERVER['SERVER_ADDR'];
 		return $this->render('index',[
 			'code'=>0,
 			'keys'=>$keys,
@@ -173,7 +173,7 @@ class SiteController extends BaseController
 			'count'=>$count,
 			'match_count'=>$matchCount,
 			'match_count_real'=>$matchCountReal,
-			'visitor_ip'=>$visitor_ip,
+			'server_ip'=>$serverIp,
 			'delete_auth'=>true,
 			'databaseCount'=>$databaseCount,
 			'db'=>$db,
