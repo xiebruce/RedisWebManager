@@ -82,7 +82,7 @@ server {
 ```
 
 ## Attention
-The pagination is correct when search keyword is not null, because redis can't get the total number of matched keys, so I am always using the total number of keys of current db, but this won't intervene you using this tool.
+The pagination is incorrect when search keyword is not null, because redis can't get the total number of matched keys, so I am always using the total number of keys of current db, but this won't intervene you using this tool.
 
 
 ## Update Log

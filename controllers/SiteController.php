@@ -2,7 +2,8 @@
 
 namespace app\controllers;
 
-use phpDocumentor\Reflection\DocBlock\Tags\Var_;
+use app\models\RedisKeyList;
+use app\models\Sqlite;
 use Yii;
 use Redis;
 use yii\filters\AccessControl;
@@ -102,23 +103,30 @@ class SiteController extends BaseController
 		$username = $identity->username;
 		
 		//Get params
-		$keyword = Yii::$app->request->get('keyword','');
+		$request = Yii::$app->request;
+		$keyword = $request->get('keyword','');
 		$keyword = trim($keyword);
-		$page = Yii::$app->request->get('page');
-		//Previous iterator
-		$preIterator = Yii::$app->request->get('preIterator');
-		if(!$preIterator){
+		$page = $request->get('page');
+		$queryParams = $request->queryParams;
+		
+		$cache = Yii::$app->cache;
+		
+		/*if(!$preIterator){
 			//be aware that this is not the same as redis cliet-cli command, in redis-cli command, the iterator starts as 0, but in php, it starts as null, if you use 0, you can't retrive anything, the scan method will return false.
 			$preIterator = null;
 		}else{
 			//iterator should be a numeric, otherwise, it won't be valid.
 			$preIterator = intval($preIterator);
-		}
-		//Decide Wich db's data should be show
-		$db = Yii::$app->request->get('db',0);
-		//queryParams are use in pagination
-		$queryParams = Yii::$app->request->queryParams;
+		}*/
 		
+		if(!$page){
+			//if page is null, it means this is the first page, we empty the table to get ready the table.
+			Yii::$app->db->createCommand()->truncateTable(RedisKeyList::tableName())->execute();
+			$page = 1;
+		}
+		
+		//Decide Wich db's data should be show
+		$db = $request->get('db',0);
 		//Connect redis
 		$redis = $this->connectRedis();
 		//Select db(default 16 db, first db is 0, last is 15)
@@ -128,14 +136,56 @@ class SiteController extends BaseController
 		
 		$pageSize = Yii::$app->params['pageSize'] ?? 10;
 		
-		//Get key list
-		$searchResult = $this->wildCardSearchKey($redis, "*{$keyword}*", $preIterator, $pageSize);
-		$keys = $searchResult['keys'];
-		$iterator = $searchResult['iterator'];
-		$queryParams['preIterator'] = $iterator;
+		$obj = RedisKeyList::find();
+		$totalCount = $obj->count();
+		$Pagination1 = new Pagination([
+			'totalCount'=>$totalCount,
+			'pageSize'=>$pageSize,
+		]);
+		$dbPageCount = $Pagination1->pageCount;
+		
+		$prePageKey = 'pre_page';
+		$prePage = $cache->get($prePageKey);
+		//cache the current pagenum, so we can get it at next time.
+		$cache->set($prePageKey, $page);
+		//$page<$prePage means the user click Prev button, so we retrieve data from the sqlitedb, but we need to make sure $page is not larger than the pages that the sqlitedb already have, otherwise we set the page to the last page of the db.
+		if($page < $prePage){
+			if($page > $dbPageCount){
+				$hostInfo = Yii::$app->request->hostInfo;
+				$queryString = $request->queryString;
+				$queryString = preg_replace('/(page=)\d+/', '${1}'.$dbPageCount, $queryString);
+				$redirectUrl = $hostInfo . '?' . $queryString;
+				// var_dump($redirectUrl);exit;
+				return $this->redirect($redirectUrl);
+			}
+			$res = $obj->offset($Pagination1->offset)->limit($Pagination1->limit)->asArray()->all();
+			$keys = array_column($res,'keyname');
+		}
+		// retrieve data from redis if the user click Next button.
+		else{
+			$lastIteratorKey = 'redis_preterator';
+			//get iterator returned from last scan
+			$lastIterator = $cache->get($lastIteratorKey);
+			$lastIterator = $lastIterator == 0 ? null : $lastIterator;
+			//Get key list by scan() method
+			$searchResult = $this->wildCardSearchKey($redis, "*{$keyword}*", $lastIterator, $pageSize);
+			$keys = $searchResult['keys'];
+			$iterator = $searchResult['iterator'];
+			//cache the iterator so we can use it in next scan
+			$cache->set($lastIteratorKey, $iterator);
+			//put the keys to the sqlitedb so we can use it when user click Prev button
+			if(!empty($keys)){
+				$curTime = time();
+				$data = [];
+				foreach ($keys as $val){
+					$data[] = [$val, $curTime];
+				}
+				$insertedRows = RedisKeyList::batchInsert($data);
+			}
+		}
 		
 		//the pagination is not right if search key is not empty, cause we can't get how many keys was matched the given key, so totalCount only right when search key is empty, otherwise the totalCount is grater then real count, but since we can't get real count, so we use totalCount, this will cause some page have no keys in it.
-		$pagination = new Pagination([
+		$pagination2 = new Pagination([
 			'totalCount'=>$count,
 			'pageSize'=>$pageSize,
 			'params'=>$queryParams,
@@ -168,7 +218,7 @@ class SiteController extends BaseController
 			'code'=>0,
 			'keys'=>$keys,
 			'keyword'=>$keyword,
-			'pagination'=>$pagination,
+			'pagination'=>$pagination2,
 			'info'=>$info,
 			'count'=>$count,
 			'match_count'=>$matchCount,

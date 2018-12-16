@@ -172,6 +172,9 @@ $quickSearch = Yii::$app->params['quickSearch'];
     if($pagination){
         echo \yii\widgets\LinkPager::widget([
             'pagination' => $pagination,
+	        'nextPageLabel' => 'Next',
+	        'prevPageLabel' => 'Prev',
+	        'maxButtonCount' => 0
         ]);
     }
     ?>

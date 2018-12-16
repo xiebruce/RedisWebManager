@@ -13,18 +13,15 @@ class User extends \yii\base\BaseObject implements \yii\web\IdentityInterface
     private static $users = [
         '100' => [
             'id' => '100',
-            'username' => 'admin',
-            'password' => 'admin',
-            'authKey' => 'test100key',
-            'accessToken' => '100-token',
+            'username' => 'admin1',
+            'password' => 'passwd1',
         ],
-        '101' => [
-            'id' => '101',
-            'username' => 'demo',
-            'password' => 'demo',
-            'authKey' => 'test101key',
-            'accessToken' => '101-token',
-        ],
+	    //you can add more account if you like, what you need to do is just modify the key and id to another value.
+	    /*'101' => [
+		    'id' => '101',
+		    'username' => 'admin2',
+		    'password' => 'passwd2',
+	    ],*/
     ];
 
 
