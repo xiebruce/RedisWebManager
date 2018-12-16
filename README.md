@@ -35,6 +35,12 @@ RedisWebManager/models/User.php
 ```
 <p align="center"><img src="https://img.xiebruce.top/2018/12/14/c1269f612b28ea8c2bbad37dd272741e.jpg" title="Xnip2018-12-14_14-56-49.jpg" alt="Xnip2018-12-14_14-56-49.jpg"></p>
 
+## Set permission
+```bash
+sudo chmod -R 777 /path/to/RedisWebManager/runtime
+sudo chmod -R 777 /path/to/RedisWebManager/web/assets
+```
+
 ## Nginx Config
 ```nginx
 server {
