@@ -105,6 +105,7 @@ class BaseController extends Controller
 		if($key_type=='none'){
 			return false;
 		}
+		$ttl = $redis->ttl($key);
 		$method = 'get'.ucfirst($key_type).'Val';
 		$value = $this->$method($key);
 		//if string is a json string or a serialize object string, I will decode json or unserialize object to array, so I need to tell the use the value type
@@ -113,7 +114,7 @@ class BaseController extends Controller
 			$value_type = $value['value_type'];
 			$value = $value['value'];
 		}
-		return ['value'=>$value,'key_type'=>$key_type, 'value_type'=>$value_type];
+		return ['value'=>$value,'key_type'=>$key_type, 'value_type'=>$value_type, 'ttl'=>$ttl];
 	}
 	
 	/**

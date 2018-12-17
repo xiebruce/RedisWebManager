@@ -48,6 +48,7 @@ $action = $this->context->action->id;
 						<?php if($value_type && $value_type!='unknow'):?>
 							<div>valueType : <?=$value_type?></div>
 						<?php endif;?>
+						<div>TTL : <?=$ttl?></div>
 						<?php if($code==-1):?>
 							<div class="errMsg"><?=$errMsg?></div>
 						<?php endif;?>

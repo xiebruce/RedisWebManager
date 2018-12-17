@@ -238,7 +238,7 @@ class SiteController extends BaseController
 			return json_encode(['code'=>-1,'msg'=>'Please login']);
 		}
 		$key = Yii::$app->request->get('key');
-		$db = Yii::$app->request->get('db');
+		$db = Yii::$app->request->get('db', 0);
 		$key = trim($key);
 		$arr = $this->getRedisVal($key, $db);
 		if(!$arr){
@@ -250,6 +250,16 @@ class SiteController extends BaseController
 				'errMsg' => 'This key does not exists or expired.',
 			]);
 		}
+		switch ($arr['ttl']){
+			case -1:
+				$ttl = 'not set';
+				break;
+			case -2:
+				$ttl = 'expired';
+				break;
+			default:
+				$ttl = $arr['ttl'];
+		}
 		// $value = print_r($arr['value'],true);
 		$value = \yii\helpers\VarDumper::dumpAsString($arr['value'], 10, true);
 		return json_encode([
@@ -257,6 +267,7 @@ class SiteController extends BaseController
 			'value'=>$value,
 			'key_type'=>$arr['key_type'],
 			'value_type'=>$arr['value_type'],
+			'ttl'=>$ttl,
 		]);
 	}
 	
@@ -271,7 +282,7 @@ class SiteController extends BaseController
 		$keyword = Yii::$app->request->get('keyword');
 		$specified_key = Yii::$app->request->get('specified_key');
 		$specified_key = trim($specified_key);
-		$db = Yii::$app->request->get('db');
+		$db = Yii::$app->request->get('db', 0);
 		$arr = $this->getRedisVal($specified_key, $db);
 		if(!$arr){
 			return $this->render('view-redis-value',[
@@ -284,6 +295,16 @@ class SiteController extends BaseController
 				'errMsg' => 'This key does not exists or expired.',
 			]);
 		}else{
+			switch ($arr['ttl']){
+				case -1:
+					$ttl = 'not set';
+					break;
+				case -2:
+					$ttl = 'expired';
+					break;
+				default:
+					$ttl = $arr['ttl'];
+			}
 			return $this->render('view-redis-value',[
 				'code'=>0,
 				'keyword'=>$keyword,
@@ -291,6 +312,7 @@ class SiteController extends BaseController
 				'key_type'=>$arr['key_type'],
 				'value'=>$arr['value'],
 				'value_type'=>$arr['value_type'],
+				'ttl'=>$ttl,
 			]);
 		}
 	}
@@ -304,7 +326,7 @@ class SiteController extends BaseController
 			return json_encode(['code'=>-1,'msg'=>'Please login']);
 		}
 		$keys = Yii::$app->request->post('keys');
-		$db = Yii::$app->request->post('db');
+		$db = Yii::$app->request->post('db',0);
 		if(!$keys){
 			return json_encode(['code'=>-2,'msg'=>'no key']);
 		}
@@ -341,7 +363,7 @@ class SiteController extends BaseController
 		}
 		$redis = $this->connectRedis();
 		if($flush_type=='flush-db'){
-			$db = Yii::$app->request->post('db');
+			$db = Yii::$app->request->post('db', 0);
 			$redis->select($db);
 			$ret = $redis->flushDb();
 			if($ret){

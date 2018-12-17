@@ -303,10 +303,11 @@ $valDisplayType = Yii::$app->params['valDisplayType'] ?? 'popup';
 	                <?php else:?>
 		                if(responseText.code==0){
 			                var str = '';
-			                str += 'keyType => '+responseText.key_type+"<br>";
+			                str += 'KeyType => '+responseText.key_type+"<br>";
 			                if(responseText.value_type!==''){
-				                str += 'valueType => '+responseText.value_type+"<br>";
+				                str += 'ValueType => '+responseText.value_type+"<br>";
 			                }
+			                str += 'TTL => '+responseText.ttl+"<br>";
 			                if(responseText.key_type==null && responseText.value_type==null){
 				                str += responseText.errMsg + "\n";
 			                }
