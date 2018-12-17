@@ -148,23 +148,23 @@ class BaseController extends Controller
 	 * get hash type value
 	 * @param $key
 	 *
-	 * @return string
+	 * @return array
 	 */
 	public function getHashVal($key){
 		$redis = Yii::$app->redis;
 		$arr = $redis->hgetall($key);
 		$i = 0;
 		$max = count($arr) / 2;
-		$str = '';
+		$data = [];
 		while(1){
 			if($i>=$max){
 				break;
 			}
 			$newArr = array_slice($arr, $i*2, 2);
-			$str .= $newArr[0].' => '.$newArr[1]."\n";
+			$data[$newArr[0]] = $newArr[1];
 			$i++;
 		}
-		return "\n".$str;
+		return $data;
 	}
 	
 	/**
@@ -196,23 +196,23 @@ class BaseController extends Controller
 	 * get zset value
 	 * @param $key
 	 *
-	 * @return string
+	 * @return array
 	 */
 	public function getZsetVal($key){
 		$redis = Yii::$app->redis;
-		$sortedSet = $redis->zrange($key, 0, -1, 'WITHSCORES');
+		$arr = $redis->zrange($key, 0, -1, 'WITHSCORES');
 		$i = 0;
-		$max = count($sortedSet) / 2;
-		$str = '';
+		$max = count($arr) / 2;
+		$data = [];
 		while(1){
 			if($i>=$max){
 				break;
 			}
-			$newArr = array_slice($sortedSet, $i*2, 2);
-			$str .= $newArr[0].' => '.$newArr[1]."\n";
+			$newArr = array_slice($arr, $i*2, 2);
+			$data[$newArr[0]] = $newArr[1];
 			$i++;
 		}
-		return "\n".$str;
+		return $data;
 	}
 	
 	/**
