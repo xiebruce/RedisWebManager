@@ -106,6 +106,7 @@ class BaseController extends Controller
 			return false;
 		}
 		$ttl = $redis->ttl($key);
+		$ttl = self::secToYmdHis($ttl);
 		$method = 'get'.ucfirst($key_type).'Val';
 		$value = $this->$method($key);
 		//if string is a json string or a serialize object string, I will decode json or unserialize object to array, so I need to tell the use the value type
@@ -212,5 +213,111 @@ class BaseController extends Controller
 			$i++;
 		}
 		return "\n".$str;
+	}
+	
+	/**
+	 * Transfer seconds to YmdHis
+	 * @param      $seconds
+	 * @param bool $returnArray
+	 *
+	 * @return string
+	 */
+	public static function secToYmdHis($seconds, $returnArray=false){
+		$oneYearSecs = 31536000;
+		$oneMonthSecs = 2592000;
+		$oneDaySecs = 86400;
+		$oneHourSecs = 3600;
+		$oneMinSecs = 60;
+		
+		$arr = ['years'=>'', 'months'=>'', 'days'=>'', 'hours'=>'', 'minutes'=>'', 'seconds'=>''];
+		if($seconds > $oneYearSecs){
+			$arr['years'] = floor($seconds / $oneYearSecs);
+			
+			$left1 = $seconds - $arr['years'] * $oneYearSecs;
+			$arr['months'] = floor($left1 / $oneMonthSecs);
+			
+			$left2 = $left1 - $arr['months'] * $oneMonthSecs;
+			$arr['days'] = floor($left2 / $oneDaySecs);
+			
+			$left3 = $left2 - $arr['days'] * $oneDaySecs;
+			$arr['hours'] = floor($left3 / $oneHourSecs);
+			
+			$left4 = $left3 - $arr['hours'] * $oneHourSecs;
+			$arr['minutes'] = floor($left4 / $oneMinSecs);
+			
+			$left5 = $left4 - $arr['minutes'] * $oneMinSecs;
+			$arr['seconds'] = $left5;
+		}else if($seconds > $oneMonthSecs){
+			$arr['months'] = floor($seconds / $oneMonthSecs);
+			
+			$left2 = $seconds - $arr['months'] * $oneMonthSecs;
+			$arr['days'] = floor($left2 / $oneDaySecs);
+			
+			$left3 = $left2 - $arr['days'] * $oneDaySecs;
+			$arr['hours'] = floor($left3 / $oneHourSecs);
+			
+			$left4 = $left3 - $arr['hours'] * $oneHourSecs;
+			$arr['minutes'] = floor($left4 / $oneMinSecs);
+			
+			$left5 = $left4 - $arr['minutes'] * $oneMinSecs;
+			$arr['seconds'] = $left5;
+		}else if($seconds > $oneDaySecs){
+			$arr['days'] = floor($seconds / $oneDaySecs);
+			
+			$left3 = $seconds - $arr['days'] * $oneDaySecs;
+			$arr['hours'] = floor($left3 / $oneHourSecs);
+			
+			$left4 = $left3 - $arr['hours'] * $oneHourSecs;
+			$arr['minutes'] = floor($left4 / $oneMinSecs);
+			
+			$left5 = $left4 - $arr['minutes'] * $oneMinSecs;
+			$arr['seconds'] = $left5;
+		}else if($seconds > $oneHourSecs){
+			$arr['hours'] = floor($seconds / $oneHourSecs);
+			
+			$left4 = $seconds - $arr['hours'] * $oneHourSecs;
+			$arr['minutes'] = floor($left4 / $oneMinSecs);
+			
+			$left5 = $left4 - $arr['minutes'] * $oneMinSecs;
+			$arr['seconds'] = $left5;
+		}else if($seconds > $oneMinSecs){
+			$arr['minutes'] = floor($seconds / $oneMinSecs);
+			
+			$left5 = $seconds - $arr['minutes'] * $oneMinSecs;
+			$arr['seconds'] = $left5;
+		}else{
+			$arr['seconds'] = $seconds;
+		}
+		
+		if($returnArray){
+			return $arr;
+		}
+		
+		$str = '';
+		if($arr['years']){
+			$str .= $arr['years'];
+			$arr['years'] > 1 ? $str.=' years ' : $str.=' year ';
+		}
+		if($arr['months']){
+			$str .= $arr['months'];
+			$arr['months'] > 1 ? $str.=' months ' : $str.=' month ';
+		}
+		if($arr['days']){
+			$str .= $arr['days'];
+			$arr['days'] > 1 ? $str.=' days ' : $str.=' day ';
+		}
+		if($arr['hours']){
+			$str .= $arr['hours'];
+			$arr['hours'] > 1 ? $str.=' hours ' : $str.=' hour ';
+		}
+		if($arr['minutes']){
+			$str .= $arr['minutes'];
+			$arr['minutes'] > 1 ? $str.=' mins ' : $str.=' min ';
+		}
+		if($arr['seconds']){
+			$str .= $arr['seconds'];
+			$arr['seconds'] > 1 ? $str.=' secs ' : $str.=' sec ';
+		}
+		return $str;
 	}
 }
