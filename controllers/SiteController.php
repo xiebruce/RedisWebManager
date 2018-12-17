@@ -93,7 +93,6 @@ class SiteController extends BaseController
 	/**
 	 * redis key list
 	 * @return string
-	 * @throws \yii\db\Exception
 	 */
 	public function actionIndex(){
 		//Check login status
@@ -119,15 +118,14 @@ class SiteController extends BaseController
 			//iterator should be a numeric, otherwise, it won't be valid.
 			$preIterator = intval($preIterator);
 		}*/
+		//Decide Wich db's data should be show
+		$db = $request->get('db',0);
 		
 		if(!$page){
 			//if page is null, it means this is the first page, we empty the table to get ready the table.
-			Yii::$app->db->createCommand()->truncateTable(RedisKeyList::tableName())->execute();
+			RedisKeyList::deleteAll('db=' . $db);
 			$page = 1;
 		}
-		
-		//Decide Wich db's data should be show
-		$db = $request->get('db',0);
 		//Connect redis
 		$redis = $this->connectRedis();
 		//Select db(default 16 db, first db is 0, last is 15)
@@ -156,10 +154,9 @@ class SiteController extends BaseController
 				$queryString = $request->queryString;
 				$queryString = preg_replace('/(page=)\d+/', '${1}'.$dbPageCount, $queryString);
 				$redirectUrl = $hostInfo . '?' . $queryString;
-				// var_dump($redirectUrl);exit;
 				return $this->redirect($redirectUrl);
 			}
-			$res = $obj->offset($Pagination1->offset)->limit($Pagination1->limit)->asArray()->all();
+			$res = $obj->where(['db'=>$db])->offset($Pagination1->offset)->limit($Pagination1->limit)->asArray()->all();
 			$keys = array_column($res,'keyname');
 		}
 		// retrieve data from redis if the user click Next button.
@@ -179,7 +176,7 @@ class SiteController extends BaseController
 				$curTime = time();
 				$data = [];
 				foreach ($keys as $val){
-					$data[] = [$val, $curTime];
+					$data[] = [$val, $curTime, $db];
 				}
 				$insertedRows = RedisKeyList::batchInsert($data);
 			}
@@ -241,8 +238,9 @@ class SiteController extends BaseController
 			return json_encode(['code'=>-1,'msg'=>'Please login']);
 		}
 		$key = Yii::$app->request->get('key');
+		$db = Yii::$app->request->get('db');
 		$key = trim($key);
-		$arr = $this->getRedisVal($key);
+		$arr = $this->getRedisVal($key, $db);
 		if(!$arr){
 			//means the key was expired.
 			$delCountDown = 2;
@@ -273,7 +271,8 @@ class SiteController extends BaseController
 		$keyword = Yii::$app->request->get('keyword');
 		$specified_key = Yii::$app->request->get('specified_key');
 		$specified_key = trim($specified_key);
-		$arr = $this->getRedisVal($specified_key);
+		$db = Yii::$app->request->get('db');
+		$arr = $this->getRedisVal($specified_key, $db);
 		if(!$arr){
 			return $this->render('view-redis-value',[
 				'code'=>-1,
@@ -305,11 +304,13 @@ class SiteController extends BaseController
 			return json_encode(['code'=>-1,'msg'=>'Please login']);
 		}
 		$keys = Yii::$app->request->post('keys');
+		$db = Yii::$app->request->post('db');
 		if(!$keys){
 			return json_encode(['code'=>-2,'msg'=>'no key']);
 		}
 		
 		$redis = $this->connectRedis();
+		$redis->select($db);
 		if(is_array($keys)){
 			$pipe = $redis->multi(Redis::PIPELINE);
 			foreach($keys as $key){

@@ -95,10 +95,12 @@ class BaseController extends Controller
 	/**
 	 * Get redis value
 	 * @param $key
+	 * @param $db
 	 * @return array
 	 */
-	public function getRedisVal($key){
+	public function getRedisVal($key, $db=0){
 		$redis = Yii::$app->redis;
+		$redis->select($db);
 		$key_type = $redis->type($key);
 		if($key_type=='none'){
 			return false;

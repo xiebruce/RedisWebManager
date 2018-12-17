@@ -237,13 +237,16 @@ $valDisplayType = Yii::$app->params['valDisplayType'] ?? 'popup';
             if($this.attr('isclick')==1){
                 return false;
             }
+	        $this.attr('isclick',1);
+            
             var key = $this.attr('key');
-            $this.attr('isclick',1);
+	        var db = $('select[name="db"]').val();
             $.ajax({
                 type:'post',
                 url:'/'+controller+'/del-redis-key',
                 data:{
                     keys:key,
+                    db:db,
 	                _csrf:csrfToken,
                 },
                 dataType:'json',
@@ -262,20 +265,24 @@ $valDisplayType = Yii::$app->params['valDisplayType'] ?? 'popup';
         // Preview value of the key
         $('.key-name').on('click', function (){
             var $this = $(this);
+	        <?php if($valDisplayType=='inline'):?>
             if($this.next().is(':visible')){
 	            $this.next().empty().hide();
                 return false;
             }
+            <?php endif;?>
             if($this.attr('isclick')==1){
                 return false;
             }
             var key = $this.html();
             $this.attr('isclick',1);
+	        var db = $('select[name="db"]').val();
             $.ajax({
                 type:'get',
                 url:'/'+controller+'/get-redis-val',
                 data:{
                     key:key,
+	                db:db,
 	                // _csrf:csrfToken,
                 },
                 dataType:'json',
@@ -311,7 +318,8 @@ $valDisplayType = Yii::$app->params['valDisplayType'] ?? 'popup';
 			                $('#redis-value-modal').modal('show');
 		                }else if(responseText.code == -1){
 			                var str = responseText.errMsg;
-			                str += ' <a href="'+window.location.origin+'">Reload</a>';
+			                var url = window.location.href.replace(/[&|?]page=\d+&per-page=\d+/,'');
+			                str += ' <a href="'+url+'">Reload</a>';
 			                $this.parent().html(str);
 		                }
 	                <?php endif;?>
@@ -391,12 +399,13 @@ $valDisplayType = Yii::$app->params['valDisplayType'] ?? 'popup';
             }
 
             var keys = keys_obj.serialize();
+	        var db = $('select[name="db"]').val();
             if(keys!=null && keys!=''){
                 $this.attr('isclick',1);
                 $.ajax({
                     type:'post',
                     url:'/'+controller+'/del-redis-key',
-                    data:keys + '&_csrf='+csrfToken,
+                    data:keys + '&db='+db+'&_csrf='+csrfToken,
                     dataType:'json',
                     success:function (responseText){
                         if(responseText.code==0){

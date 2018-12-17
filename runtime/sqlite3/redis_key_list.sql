@@ -35,6 +35,7 @@ CREATE TABLE `redis_key_list` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `keyname` varchar(200) NOT NULL,
   `created_at` int(11) NOT NULL,
+  `db` int(11) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
