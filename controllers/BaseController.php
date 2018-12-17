@@ -138,7 +138,15 @@ class BaseController extends Controller
 			$decode_value = json_decode($value,true);
 			if(json_last_error()===JSON_ERROR_NONE){
 				$value = $decode_value;
-				is_array($value) && $value_type = 'json';
+				if(is_array($value)){
+					$value_type = 'json';
+					//数组中可能存在序列化后的对象，递归反序列化成对象方便查看
+					array_walk_recursive($value,function($v, $k){
+						if($this->is_serialized($v)){
+							return unserialize($v);
+						}
+					});
+				}
 			}
 		}
 		return ['value'=>$value, 'value_type'=>$value_type];
