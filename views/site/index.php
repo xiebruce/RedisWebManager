@@ -309,7 +309,9 @@ $quickSearch = Yii::$app->params['quickSearch'];
 			                // $('#redis-value-modal').modal('handleUpdate');
 			                $('#redis-value-modal').modal('show');
 		                }else if(responseText.code == -1){
-			                $this.parent().html(responseText.errMsg);
+			                var str = responseText.errMsg;
+			                str += ' <a href="'+window.location.origin+'">Reload</a>';
+			                $this.parent().html(str);
 		                }
 	                <?php endif;?>
                     $this.attr('isclick',0);
