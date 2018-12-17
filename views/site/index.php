@@ -107,6 +107,7 @@ $valDisplayType = Yii::$app->params['valDisplayType'] ?? 'popup';
                 <th colspan="3">
                     <form>
                         <input type="input" name="keyword" placeholder="Please enter keyword" class="form-control pull-left keyword" value="<?=$keyword?>">
+	                    <input type="hidden" name="db" value="<?=$db?>">
                         <button type="submit" class="btn btn-primary pull-left search-btn">Search</button>
                     </form>
                 </th>
