@@ -254,6 +254,8 @@ $quickSearch = Yii::$app->params['quickSearch'];
                         str += "-------------------------------------------------------------------\n";
 	                    str += responseText.value;
                         alert(str);
+                    }else if(responseText.code == -1){
+	                    $this.parent().html(responseText.errMsg);
                     }
                     $this.attr('isclick',0);
                 }

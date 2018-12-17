@@ -100,6 +100,9 @@ class BaseController extends Controller
 	public function getRedisVal($key){
 		$redis = Yii::$app->redis;
 		$key_type = $redis->type($key);
+		if($key_type=='none'){
+			return ['value'=>null,'key_type'=>'string', 'value_type'=>'expired'];
+		}
 		$method = 'get'.ucfirst($key_type).'Val';
 		$value = $this->$method($key);
 		//if string is a json string or a serialize object string, I will decode json or unserialize object to array, so I need to tell the use the value type

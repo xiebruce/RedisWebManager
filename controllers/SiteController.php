@@ -242,6 +242,15 @@ class SiteController extends BaseController
 		$key = Yii::$app->request->post('key');
 		$key = trim($key);
 		$arr = $this->getRedisVal($key);
+		if($arr['key_type']=='string' && $arr['value_type']=='expired'){
+			//means the key was expired.
+			$delCountDown = 2;
+			return json_encode([
+				'code'=>-1,
+				'delCountDown'=>$delCountDown,
+				'errMsg' => 'This key was expired!',
+			]);
+		}
 		$value = print_r($arr['value'],true);
 		return json_encode([
 			'code'=>0,
