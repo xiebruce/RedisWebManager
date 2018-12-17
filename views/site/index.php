@@ -20,6 +20,7 @@ $queryString = Yii::$app->request->queryString;
 $queryString = $queryString ? $queryString.'&' : '';
 
 $quickSearch = Yii::$app->params['quickSearch'];
+$valDisplayType = Yii::$app->params['valDisplayType'] ?? 'popup';
 ?>
 
 <style type="text/css">
@@ -279,7 +280,7 @@ $quickSearch = Yii::$app->params['quickSearch'];
                 },
                 dataType:'json',
                 success:function (responseText){
-                	<?php if(Yii::$app->params['valDisplayType']=='inline'):?>
+                	<?php if($valDisplayType=='inline'):?>
 		                var str = '';
 		                str += '------------------------------------<br>';
 		                str += 'keyType => '+responseText.key_type+"<br>";
