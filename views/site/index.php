@@ -51,10 +51,7 @@ $quickSearch = Yii::$app->params['quickSearch'];
         cursor:pointer;
     }
     .redis-value{
-        max-width:300px;
-        min-height:100px;
-        /*border:1px solid #ccc;*/
-        /*position: relative;*/
+        display: none;
     }
     .quick-search{
         margin-right:5px;
@@ -68,9 +65,16 @@ $quickSearch = Yii::$app->params['quickSearch'];
     .view-in-new-page{
         margin-right:5px;
     }
+	#redis-value-modal{
+		word-break: break-all;
+		word-wrap: break-word;
+	}
+	#redis-value-modal .modal-dialog{
+		width: <?=Yii::$app->params['modalWidth']??''?>;
+	}
 </style>
 
-<div class="table-responsive" id="key-list" action="">
+<div class="table-responsive" id="key-list">
     <div class="container">
         <table class="table table-hover table-striped table-bordered table-condensed">
             <thead>
@@ -134,7 +138,8 @@ $quickSearch = Yii::$app->params['quickSearch'];
                             <input type="checkbox" name="keys[]" value="<?=$key?>">
                         </td>
                         <td class="col-xs-9">
-                            <a tabindex="0" class="key-name" role="button" data-toggle="popover" data-container="body" title="click to preview value of key: <?=$key?>" data-content="" data-placement="right"><?=$key?></a>
+                            <a class="key-name" role="button" data-toggle="popover" data-container="body" title="click to preview value of key: <?=$key?>" data-content="" data-html="true" data-placement="bottom"><?=$key?></a>
+	                        <div class="redis-value"></div>
                         </td>
                         <td class="text-center col-xs-2">
                             <a href="/<?=$controller?>/view-redis-value?<?=$queryString?>specified_key=<?=$key?>" title="Click to view value in new page" class="btn btn-info view-in-new-page">View</a>
@@ -180,6 +185,32 @@ $quickSearch = Yii::$app->params['quickSearch'];
     ?>
 </div>
 
+<!-- Modal popup -->
+<div class="modal fade" id="redis-value-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+					&times;
+				</button>
+				<h4 class="modal-title" id="myModalLabel">
+					<!-- Insert title here -->
+				</h4>
+			</div>
+			<div class="modal-body">
+				<!-- Insert display content here -->
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				<!--<button type="button" class="btn btn-primary">Submit</button>-->
+			</div>
+		</div><!-- /.modal-content -->
+	</div><!-- /.modal -->
+</div>
+
+<!--<a href="#" data-toggle="popover" title="Example popover">
+	popover
+</a>-->
 <script>
     $(document).ready(function (){
         //tool tip
@@ -187,6 +218,9 @@ $quickSearch = Yii::$app->params['quickSearch'];
         $('a[role="tooltip"]').click(function (e){
             e.stopPropagation();
         });*/
+		
+	    // $('[data-toggle="popover"]').popover();
+        
         var controller = '<?=$controller?>';
         var csrfToken = $('meta[name="csrf-token"]').attr('content');
 
@@ -227,36 +261,57 @@ $quickSearch = Yii::$app->params['quickSearch'];
         // Preview value of the key
         $('.key-name').on('click', function (){
             var $this = $(this);
+            if($this.next().is(':visible')){
+	            $this.next().empty().hide();
+                return false;
+            }
             if($this.attr('isclick')==1){
                 return false;
             }
             var key = $this.html();
             $this.attr('isclick',1);
             $.ajax({
-                type:'post',
+                type:'get',
                 url:'/'+controller+'/get-redis-val',
                 data:{
                     key:key,
-	                _csrf:csrfToken,
+	                // _csrf:csrfToken,
                 },
                 dataType:'json',
                 success:function (responseText){
-                    if(responseText.code==0){
-                        /*$this.attr({
-                            'title':'type: '+responseText.type,
-                            'data-content':responseText.value
-                        })*/
-                        var str = '';
-	                    str += 'keyType => '+responseText.key_type+"\n";
-	                    if(responseText.value_type!==''){
-		                    str += 'valueType => '+responseText.value_type+"\n";
-	                    }
-                        str += "-------------------------------------------------------------------\n";
-	                    str += responseText.value;
-                        alert(str);
-                    }else if(responseText.code == -1){
-	                    $this.parent().html(responseText.errMsg);
-                    }
+                	<?php if(Yii::$app->params['valDisplayType']=='inline'):?>
+		                var str = '';
+		                str += '------------------------------------<br>';
+		                str += 'keyType => '+responseText.key_type+"<br>";
+		                if(responseText.value_type!==''){
+			                str += 'valueType => '+responseText.value_type+"<br>";
+		                }
+		                if(responseText.key_type==null && responseText.value_type==null){
+			                str += responseText.errMsg + "<br>";
+		                }
+		                str += '------------------------------------<br>';
+		                $this.next('.redis-value').html(str + responseText.value);
+		                $this.next('.redis-value').show();
+	                <?php else:?>
+		                if(responseText.code==0){
+			                var str = '';
+			                str += 'keyType => '+responseText.key_type+"<br>";
+			                if(responseText.value_type!==''){
+				                str += 'valueType => '+responseText.value_type+"<br>";
+			                }
+			                if(responseText.key_type==null && responseText.value_type==null){
+				                str += responseText.errMsg + "\n";
+			                }
+			                str += "----------------------------------------------------<br>";
+			                str += responseText.value;
+		                	$('#redis-value-modal .modal-title').html(key);
+		                	$('#redis-value-modal .modal-body').html(str);
+			                // $('#redis-value-modal').modal('handleUpdate');
+			                $('#redis-value-modal').modal('show');
+		                }else if(responseText.code == -1){
+			                $this.parent().html(responseText.errMsg);
+		                }
+	                <?php endif;?>
                     $this.attr('isclick',0);
                 }
             });

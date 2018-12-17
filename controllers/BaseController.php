@@ -101,7 +101,7 @@ class BaseController extends Controller
 		$redis = Yii::$app->redis;
 		$key_type = $redis->type($key);
 		if($key_type=='none'){
-			return ['value'=>null,'key_type'=>'string', 'value_type'=>'expired'];
+			return false;
 		}
 		$method = 'get'.ucfirst($key_type).'Val';
 		$value = $this->$method($key);

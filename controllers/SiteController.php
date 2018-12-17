@@ -93,6 +93,7 @@ class SiteController extends BaseController
 	/**
 	 * redis key list
 	 * @return string
+	 * @throws \yii\db\Exception
 	 */
 	public function actionIndex(){
 		//Check login status
@@ -239,19 +240,20 @@ class SiteController extends BaseController
 		if(Yii::$app->user->isGuest){
 			return json_encode(['code'=>-1,'msg'=>'Please login']);
 		}
-		$key = Yii::$app->request->post('key');
+		$key = Yii::$app->request->get('key');
 		$key = trim($key);
 		$arr = $this->getRedisVal($key);
-		if($arr['key_type']=='string' && $arr['value_type']=='expired'){
+		if(!$arr){
 			//means the key was expired.
 			$delCountDown = 2;
 			return json_encode([
 				'code'=>-1,
 				'delCountDown'=>$delCountDown,
-				'errMsg' => 'This key was expired!',
+				'errMsg' => 'This key does not exists or expired.',
 			]);
 		}
-		$value = print_r($arr['value'],true);
+		// $value = print_r($arr['value'],true);
+		$value = \yii\helpers\VarDumper::dumpAsString($arr['value'], 10, true);
 		return json_encode([
 			'code'=>0,
 			'value'=>$value,
@@ -272,13 +274,26 @@ class SiteController extends BaseController
 		$specified_key = Yii::$app->request->get('specified_key');
 		$specified_key = trim($specified_key);
 		$arr = $this->getRedisVal($specified_key);
-		return $this->render('view-redis-value',[
-			'keyword'=>$keyword,
-			'specified_key'=>$specified_key,
-			'key_type'=>$arr['key_type'],
-			'value'=>$arr['value'],
-			'value_type'=>$arr['value_type'],
-		]);
+		if(!$arr){
+			return $this->render('view-redis-value',[
+				'code'=>-1,
+				'keyword'=>$keyword,
+				'specified_key'=>$specified_key,
+				'key_type'=>'unknow',
+				'value'=>'',
+				'value_type'=>'unknow',
+				'errMsg' => 'This key does not exists or expired.',
+			]);
+		}else{
+			return $this->render('view-redis-value',[
+				'code'=>0,
+				'keyword'=>$keyword,
+				'specified_key'=>$specified_key,
+				'key_type'=>$arr['key_type'],
+				'value'=>$arr['value'],
+				'value_type'=>$arr['value_type'],
+			]);
+		}
 	}
 	
 	/**
