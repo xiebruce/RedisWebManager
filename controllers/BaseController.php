@@ -133,6 +133,14 @@ class BaseController extends Controller
 			$value_type = gettype($value);
 			if($value_type=='object' && isset($value->attributes)){
 				$value = $value->attributes;
+			}else if($value_type=='array'){
+				//the array element could be a serialized object,
+				// if it is, unserialize it in order to read it more convenient
+				array_walk_recursive($value,function(&$v, $k){
+					if($this->is_serialized($v)){
+						$v = unserialize($v);
+					}
+				});
 			}
 		}else{
 			$decode_value = json_decode($value,true);
@@ -140,10 +148,11 @@ class BaseController extends Controller
 				$value = $decode_value;
 				if(is_array($value)){
 					$value_type = 'json';
-					//数组中可能存在序列化后的对象，递归反序列化成对象方便查看
-					array_walk_recursive($value,function($v, $k){
+					//the array element could be a serialized object,
+					// if it is, unserialize it in order to read it more convenient
+					array_walk_recursive($value,function(&$v, $k){
 						if($this->is_serialized($v)){
-							return unserialize($v);
+							$v = unserialize($v);
 						}
 					});
 				}
