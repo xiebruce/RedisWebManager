@@ -1,7 +1,19 @@
 
 RedisWebManager
 ===============
-<p align="center"><img src="https://img.xiebruce.top/2018/12/14/a46a7759709cc3ee33f407e4cf1fa8c1.jpg" title="Xnip2018-12-14_00-22-03.jpg" alt="Xnip2018-12-14_00-22-03.jpg"></p>
+Home page preview:
+<p align="center"><img src="https://img.xiebruce.top/2018/12/19/274e6fc38f6742052ac9239623bf1a94.jpg" title="Xnip2018-12-19_01-17-31.jpg" alt="Xnip2018-12-19_01-17-31.jpg"></p>
+
+Check the value by popup(config option "valDisplayType" to "popup" at RedisWebManager/config/params.php):
+<p align="center"><img src="https://img.xiebruce.top/2018/12/19/06b077de016906082fbd5018c2f0a831.jpg" title="Xnip2018-12-19_00-47-26.jpg" alt="Xnip2018-12-19_00-47-26.jpg"></p>
+
+Check the value inline(config option "valDisplayType" to "inline" at RedisWebManager/config/params.php):
+<p align="center"><img src="https://img.xiebruce.top/2018/12/19/bf7d905a82004282352a1768a293e489.jpg" title="Xnip2018-12-19_01-28-54.jpg" alt="Xnip2018-12-19_01-28-54.jpg"></p>
+
+Check the value in new page(only when the data is too long, check it in new page will be more clear and comfortable):
+<p align="center"><img src="https://img.xiebruce.top/2018/12/19/8795ec205a5a863ff280c55e23b82fc6.jpg" title="Xnip2018-12-19_01-25-33.jpg" alt="Xnip2018-12-19_01-25-33.jpg"></p>
+
+As you can see above, RedisWebManager Show the origin value(maybe array or object) not simply a json string or a serialized string, this is the advantage of this tool(unserializing string only support PHP for the present).
 
 ## 中文版本/Chinese Version
 [中文版本](https://www.xiebruce.top/664.html)
@@ -92,6 +104,14 @@ The pagination is incorrect when search keyword is not null, because redis can't
 
 
 ## Update Log
+### 2018-12-19 v0.2
+- Add inline preview manner.
+- Add showing ttl of a key.
+- Modified the popup window to bootstrap modal, not simply alert by js.
+- Modified the new preview page, more beautiful now.
+- Showing the array or object colorfully.
+- fix many bugs.
+
 ### 2018-12-14 v0.1
 - A tool that allows you to search, delete, batch delete redis key, preview value of key, flush current db or flush or db.
 
