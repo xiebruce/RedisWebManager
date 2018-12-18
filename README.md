@@ -45,7 +45,7 @@ RedisWebManager/config/params_local.php
 ```
 RedisWebManager/models/User.php
 ```
-<p align="center"><img src="https://img.xiebruce.top/2018/12/14/c1269f612b28ea8c2bbad37dd272741e.jpg" title="Xnip2018-12-14_14-56-49.jpg" alt="Xnip2018-12-14_14-56-49.jpg"></p>
+<p align="center"><img src="https://img.xiebruce.top/2018/12/19/8bddf1ceeb279d233e76af9d3e37cd2d.jpg" title="Xnip2018-12-19_01-20-59.jpg" alt="Xnip2018-12-19_01-20-59.jpg"></p>
 
 ## Set permission
 ```bash
