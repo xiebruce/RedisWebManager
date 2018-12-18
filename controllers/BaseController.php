@@ -106,6 +106,9 @@ class BaseController extends Controller
 			return false;
 		}
 		$ttl = $redis->ttl($key);
+		if($ttl==0){
+			return false;
+		}
 		$ttl = self::secToYmdHis($ttl);
 		$method = 'get'.ucfirst($key_type).'Val';
 		$value = $this->$method($key);
