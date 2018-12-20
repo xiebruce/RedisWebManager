@@ -288,20 +288,25 @@ $valDisplayType = Yii::$app->params['valDisplayType'] ?? 'popup';
                 },
                 dataType:'json',
                 success:function (responseText){
+	                var reloadUrl = window.location.href.replace(/[&|?]page=\d+&per-page=\d+/,'');
                 	<?php if($valDisplayType=='inline'):?>
-		                var str = '';
-		                str += '------------------------------------<br>';
-		                str += 'keyType => '+responseText.key_type+"<br>";
-		                if(responseText.value_type!==''){
-			                str += 'valueType => '+responseText.value_type+"<br>";
+		                if(responseText.code==0){
+			                var str = '';
+			                str += '------------------------------------<br>';
+			                str += 'keyType => '+responseText.key_type+"<br>";
+			                if(responseText.value_type!==''){
+				                str += 'valueType => '+responseText.value_type+"<br>";
+			                }
+			                str += 'TTL => '+responseText.ttl+"<br>";
+			                str += '------------------------------------<br>';
+			                str += responseText.value;
+			                $this.next('.redis-value').html(str);
+			                $this.next('.redis-value').show();
+		                }else if(responseText.code == -1){
+			                var str = responseText.errMsg;
+			                str += ' <a href="'+reloadUrl+'">Reload</a>';
+			                $this.parent().html(str);
 		                }
-	                    str += 'TTL => '+responseText.ttl+"<br>";
-		                if(responseText.key_type==null && responseText.value_type==null){
-			                str += responseText.errMsg + "<br>";
-		                }
-		                str += '------------------------------------<br>';
-		                $this.next('.redis-value').html(str + responseText.value);
-		                $this.next('.redis-value').show();
 	                <?php else:?>
 		                if(responseText.code==0){
 			                var str = '';
@@ -321,8 +326,7 @@ $valDisplayType = Yii::$app->params['valDisplayType'] ?? 'popup';
 			                $('#redis-value-modal').modal('show');
 		                }else if(responseText.code == -1){
 			                var str = responseText.errMsg;
-			                var url = window.location.href.replace(/[&|?]page=\d+&per-page=\d+/,'');
-			                str += ' <a href="'+url+'">Reload</a>';
+			                str += ' <a href="'+reloadUrl+'">Reload</a>';
 			                $this.parent().html(str);
 		                }
 	                <?php endif;?>
