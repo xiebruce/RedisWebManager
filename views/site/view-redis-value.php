@@ -44,12 +44,14 @@ $action = $this->context->action->id;
 				</tr>
 				<tr>
 					<th>
-						<div>KeyType : <?=$key_type?></div>
-						<?php if($value_type && $value_type!='unknow'):?>
-							<div>valueType : <?=$value_type?></div>
-						<?php endif;?>
-						<div>TTL : <?=$ttl?></div>
-						<?php if($code==-1):?>
+						
+						<?php if($code==0):?>
+							<div>KeyType : <?=$key_type?></div>
+							<?php if($value_type && $value_type!='unknow'):?>
+								<div>valueType : <?=$value_type?></div>
+							<?php endif;?>
+							<div>TTL : <?=$ttl?></div>
+						<?php elseif($code==-1):?>
 							<div class="errMsg"><?=$errMsg?></div>
 						<?php endif;?>
 					</th>
