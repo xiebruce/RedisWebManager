@@ -57,4 +57,13 @@ return array (
       '@yii/redis' => $vendorDir . '/yiisoft/yii2-redis/src',
     ),
   ),
+  'mojifan/yii2-predis' => 
+  array (
+    'name' => 'mojifan/yii2-predis',
+    'version' => '1.0.0.0',
+    'alias' => 
+    array (
+      '@mojifan/redis' => $vendorDir . '/mojifan/yii2-predis',
+    ),
+  ),
 );

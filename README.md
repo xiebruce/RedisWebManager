@@ -99,11 +99,13 @@ server {
 }
 ```
 
-## Attention
-The pagination is incorrect when search keyword is not null, because redis can't get the total number of matched keys, so I am always using the total number of keys of current db, but this won't intervene you using this tool.
-
-
 ## Update Log
+### 2018-12-27 v0.3
+- Add Overview server info
+- Add Web redis-cli
+- change redis client to predis(phpredis before)
+- Use ajax search other than refreshing page
+- Add load more button(remove pagination)
 ### 2018-12-19 v0.2
 - Add inline preview manner.
 - Add showing ttl of a key.

@@ -28,6 +28,22 @@ AppAsset::register($this);
 	<!-- Optional theme -->
 	<link rel="stylesheet" href="/bootstrap-3.3.7-dist/css/bootstrap-theme.min.css">
 	<link rel="icon" href="/images/redis-ico.png" sizes="192x192">
+	<style>
+		.navbar-brand{
+			padding: 0 !important;
+		}
+		.navbar-brand > img.redis-logo{
+			height: 50px;
+			float: left;
+		}
+		.brand-name{
+			padding: 15px 5px;
+			float: left;
+		}
+		.navbar{
+			margin-bottom: 0;
+		}
+	</style>
     <?php $this->head() ?>
 </head>
 <body>
@@ -36,18 +52,23 @@ AppAsset::register($this);
 <div class="wrap">
     <?php
     NavBar::begin([
-        'brandLabel' => Yii::$app->name,
+        'brandLabel' => '<img class="redis-logo" src="/images/redis-ico.png"><div class="brand-name" title="RedisWebManager">'.Yii::$app->name.'</div>',
         'brandUrl' => Yii::$app->homeUrl,
         'options' => [
             'class' => 'navbar-inverse navbar-fixed-top',
         ],
     ]);
     echo Nav::widget([
+	    'options' => ['class' => 'navbar-nav navbar-left'],
+	    'items' => [
+		    ['label' => 'Overview', 'url' => ['/site/overview']],
+		    ['label' => 'Redis-cli', 'url' => ['/site/redis-cli']],
+		    // ['label' => 'Contact', 'url' => ['/site/contact']],
+	    ],
+    ]);
+    echo Nav::widget([
         'options' => ['class' => 'navbar-nav navbar-right'],
         'items' => [
-            // ['label' => 'Home', 'url' => ['/site/index']],
-            // ['label' => 'About', 'url' => ['/site/about']],
-            // ['label' => 'Contact', 'url' => ['/site/contact']],
             Yii::$app->user->isGuest ? (
                 ['label' => 'Login', 'url' => ['/site/login']]
             ) : (

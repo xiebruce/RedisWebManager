@@ -7,41 +7,12 @@
  */
 
 namespace app\controllers;
-use phpDocumentor\Reflection\DocBlock\Tags\Var_;
+use Predis\Client;
 use yii\web\Controller;
 use Yii;
-use Redis;
 
 class BaseController extends Controller
 {
-	/**
-	 * Search by wildcard key
-	 * @param $redis
-	 * @param $wildcard
-	 * @param $iterator
-	 * @param $limit
-	 *
-	 * @return array
-	 */
-	public function wildCardSearchKey($redis, $wildcard, $iterator, $limit = 10){
-		$redis->setOption(Redis::OPT_SCAN, Redis::SCAN_RETRY);
-		$i = 0;
-		$keys = [];
-		while(1){
-			if(count($keys)>=$limit || $i>=$limit){
-				break;
-			}
-			$keys2 = $redis->scan($iterator,$wildcard,$limit);
-			$keys = array_merge($keys,$keys2);
-			if($iterator==0){
-				break;
-			}
-			$i++;
-		}
-		//why array_unique was used here? because redis can't guarantee to return unique keys.
-		return ['keys'=>array_unique($keys),'iterator'=>$iterator];
-	}
-	
 	/**
 	 * Check if a string is serialize string
 	 * @param $data
@@ -76,32 +47,32 @@ class BaseController extends Controller
 	
 	/**
 	 * connectRedis
-	 * @return Redis|string
+	 * @return Client
+	 * @throws \yii\base\InvalidConfigException
 	 */
 	public function connectRedis(){
-		$redis_config = Yii::$app->redis;
-		$redis = new Redis();
-		$connect = $redis->connect($redis_config->hostname,$redis_config->port);
-		if(!$connect){
-			return json_encode(['code'=>-1,'msg'=>'connection failed']);
-		}
-		$auth = $redis->auth($redis_config->password);
-		if(!$auth){
-			return json_encode(['code'=>-2,'msg'=>'authentification failed']);
+		/** @var Client $redis */
+		$redis = Yii::$app->get('redis');
+		$password = $redis->password ?? '';
+		if($password){
+			$redis->auth($password);
 		}
 		return $redis;
 	}
 	
 	/**
-	 * Get redis value
-	 * @param $key
-	 * @param $db
-	 * @return array
+	 * getRedisVal
+	 * @param     $key
+	 * @param int $db
+	 *
+	 * @return array|bool
+	 * @throws \yii\base\InvalidConfigException
 	 */
 	public function getRedisVal($key, $db=0){
-		$redis = Yii::$app->redis;
+		$redis = $this->connectRedis();
 		$redis->select($db);
 		$key_type = $redis->type($key);
+		$key_type = (string)$key_type;
 		if($key_type=='none'){
 			return false;
 		}
@@ -172,18 +143,7 @@ class BaseController extends Controller
 	 */
 	public function getHashVal($key){
 		$redis = Yii::$app->redis;
-		$arr = $redis->hgetall($key);
-		$i = 0;
-		$max = count($arr) / 2;
-		$data = [];
-		while(1){
-			if($i>=$max){
-				break;
-			}
-			$newArr = array_slice($arr, $i*2, 2);
-			$data[$newArr[0]] = $newArr[1];
-			$i++;
-		}
+		$data = $redis->hgetall($key);
 		return $data;
 	}
 	
@@ -220,18 +180,7 @@ class BaseController extends Controller
 	 */
 	public function getZsetVal($key){
 		$redis = Yii::$app->redis;
-		$arr = $redis->zrange($key, 0, -1, 'WITHSCORES');
-		$i = 0;
-		$max = count($arr) / 2;
-		$data = [];
-		while(1){
-			if($i>=$max){
-				break;
-			}
-			$newArr = array_slice($arr, $i*2, 2);
-			$data[$newArr[0]] = $newArr[1];
-			$i++;
-		}
+		$data = $redis->zrange($key, 0, -1, 'WITHSCORES');
 		return $data;
 	}
 	

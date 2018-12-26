@@ -2,11 +2,13 @@
 
 namespace app\controllers;
 
-use app\models\RedisKeyList;
+use app\models\RedisRawCmd;
 use app\models\Sqlite;
+use Predis\Client;
 use Yii;
 use Redis;
 use yii\filters\AccessControl;
+use yii\helpers\VarDumper;
 use yii\web\Response;
 use yii\filters\VerbFilter;
 use app\models\LoginForm;
@@ -55,7 +57,7 @@ class SiteController extends BaseController
             ],
         ];
     }
-	
+    
 	/**
 	 * Login action.
 	 *
@@ -91,115 +93,102 @@ class SiteController extends BaseController
 	}
 	
 	/**
-	 * redis key list
-	 * @return string
+	 * Overview of redis server info
+	 * @return string|Response
+	 * @throws \yii\base\InvalidConfigException
 	 */
-	public function actionIndex(){
+	public function actionOverview(){
 		//Check login status
-		$identity = Yii::$app->user->identity;
-		if(!$identity){
+		$isGuest = Yii::$app->user->isGuest;
+		if($isGuest){
 			return $this->redirect('/site/login');
 		}
-		$username = $identity->username;
 		
-		//Get params
-		$request = Yii::$app->request;
-		$keyword = $request->get('keyword','');
-		$keyword = trim($keyword);
-		$page = $request->get('page');
-		$queryParams = $request->queryParams;
+		$db = Yii::$app->request->get('db',0);
+		$redis = $this->connectRedis();
+		$redis->select($db);
+		//Get server info, like:used_memory, redis_version and so on
+		$info = $redis->info();
+		$serverIp = $_SERVER['SERVER_ADDR'];
+		return $this->render('/site/overview',[
+			'info' => $info,
+			'server_ip' => $serverIp,
+		]);
+	}
+	
+	/**
+	 * Redis web client
+	 * @return string
+	 * @throws \yii\base\InvalidConfigException
+	 */
+	public function actionRedisCli(){
+		/** @var Client $redisConfig */
+		$redisConfig = Yii::$app->get('redis');
+		$db = Yii::$app->request->get('db', 0);
+		$redis = new RedisRawCmd([
+			'hostname' => $redisConfig->host,
+			'port' => $redisConfig->port,
+		]);
 		
-		$cache = Yii::$app->cache;
-		
-		/*if(!$preIterator){
-			//be aware that this is not the same as redis cliet-cli command, in redis-cli command, the iterator starts as 0, but in php, it starts as null, if you use 0, you can't retrive anything, the scan method will return false.
-			$preIterator = null;
-		}else{
-			//iterator should be a numeric, otherwise, it won't be valid.
-			$preIterator = intval($preIterator);
-		}*/
-		//Decide Wich db's data should be show
-		$db = $request->get('db',0);
-		
-		if(!$page){
-			//if page is null, it means this is the first page, we empty the table to get ready the table.
-			RedisKeyList::deleteAll('db=' . $db);
-			$page = 1;
+		if(Yii::$app->request->isAjax){
+			if(isset($redisConfig->password) && $redisConfig->password) {
+				$auth = $redis->auth($redisConfig->password);
+			}
+			$redis->select($db);
+			// $pong = $redis->ping();
+			$cmd = Yii::$app->request->post('cmd', '');
+			$cmd = strtoupper(trim($cmd));
+			$arr = explode(' ', $cmd);
+			$cmd = $arr[0];
+			if(array_key_exists($cmd, $redis->excludeCmd)){
+				$msg = $redis->excludeCmd[$cmd]!='' ? $redis->excludeCmd[$cmd] : 'This command is not supported in the tool';
+				return json_encode(['code' => -1, 'msg' => $msg]);
+			}
+			$res = [];
+			if($cmd){
+				$res = $redis->createCommand($cmd)->execute()->getResponse();
+			}
+			$content = VarDumper::dumpAsString($res, 10, true);
+			return json_encode(['code' => 0, 'content' => $content]);
 		}
+		
+		$password = $redisConfig->password ?? '';
+		$password && $redisConfig->auth($password);
+		$redisConfig->select($db);
+		$arr = $redisConfig->config('get', 'databases');
+		$databaseCount = $arr['databases'] ?? 16;
+		
+		$serverIp = $_SERVER['SERVER_ADDR'];
+		return $this->render('redis-cli', [
+			'commands' => json_encode($redis->commands),
+			'server_ip' => $serverIp,
+			'databaseCount' => $databaseCount,
+			'db' => $db,
+		]);
+	}
+	
+	/**
+	 * Index page
+	 * @return string|Response
+	 * @throws \yii\base\InvalidConfigException
+	 */
+	public function actionIndex(){
+		$isGuest = Yii::$app->user->isGuest;
+		if($isGuest){
+			return $this->redirect('/site/login');
+		}
+		
+		//Decide Wich db's data should be show
+		$db = Yii::$app->request->get('db',0);
 		//Connect redis
 		$redis = $this->connectRedis();
 		//Select db(default 16 db, first db is 0, last is 15)
 		$redis->select($db);
 		//Get how many keys are in the selected db
 		$count = $redis->dbSize();
-		
-		$pageSize = Yii::$app->params['pageSize'] ?? 10;
-		
-		$obj = RedisKeyList::find();
-		$totalCount = $obj->count();
-		$Pagination1 = new Pagination([
-			'totalCount'=>$totalCount,
-			'pageSize'=>$pageSize,
-		]);
-		$dbPageCount = $Pagination1->pageCount;
-		
-		$prePageKey = 'pre_page';
-		$prePage = $cache->get($prePageKey);
-		//cache the current pagenum, so we can get it at next time.
-		$cache->set($prePageKey, $page);
-		//$page<$prePage means the user click Prev button, so we retrieve data from the sqlitedb, but we need to make sure $page is not larger than the pages that the sqlitedb already have, otherwise we set the page to the last page of the db.
-		if($page < $prePage){
-			if($page > $dbPageCount){
-				$hostInfo = Yii::$app->request->hostInfo;
-				$queryString = $request->queryString;
-				$queryString = preg_replace('/(page=)\d+/', '${1}'.$dbPageCount, $queryString);
-				$redirectUrl = $hostInfo . '?' . $queryString;
-				return $this->redirect($redirectUrl);
-			}
-			$res = $obj->where(['db'=>$db])->offset($Pagination1->offset)->limit($Pagination1->limit)->asArray()->all();
-			$keys = array_column($res,'keyname');
-		}
-		// retrieve data from redis if the user click Next button.
-		else{
-			$lastIteratorKey = 'redis_preterator';
-			//get iterator returned from last scan
-			$lastIterator = $cache->get($lastIteratorKey);
-			$lastIterator = $lastIterator == 0 ? null : $lastIterator;
-			//Get key list by scan() method
-			$searchResult = $this->wildCardSearchKey($redis, "*{$keyword}*", $lastIterator, $pageSize);
-			$keys = $searchResult['keys'];
-			$iterator = $searchResult['iterator'];
-			//cache the iterator so we can use it in next scan
-			$cache->set($lastIteratorKey, $iterator);
-			//put the keys to the sqlitedb so we can use it when user click Prev button
-			if(!empty($keys)){
-				$curTime = time();
-				$data = [];
-				foreach ($keys as $val){
-					$data[] = [$val, $curTime, $db];
-				}
-				$insertedRows = RedisKeyList::batchInsert($data);
-			}
-		}
-		
-		//the pagination is not right if search key is not empty, cause we can't get how many keys was matched the given key, so totalCount only right when search key is empty, otherwise the totalCount is grater then real count, but since we can't get real count, so we use totalCount, this will cause some page have no keys in it.
-		$pagination2 = new Pagination([
-			'totalCount'=>$count,
-			'pageSize'=>$pageSize,
-			'params'=>$queryParams,
-		]);
-		
-		$matchCountReal = false;
-		// this $matchCount is current page match count, not the total match count, cause we can't get the total match count directly
-		$matchCount = count($keys);
-		// if $page is null it means there is only one page, and if $iterator equals to 0, it means that there is only one iteration, all matched keys were returned, this time, $matchCount is equals to total match count(I call it "real match count").
-		if(!$page && $iterator == 0){
-			$matchCountReal = true;
-		}
-		
 		//Get server info, like:used_memory, redis_version and so on
 		$info = $redis->info();
-		
+		// var_dump($info);exit;
 		//Get how many databases are configured
 		$arr = $redis->config('get', 'databases');
 		$databaseCount = $arr['databases'] ?? 16;
@@ -210,28 +199,53 @@ class SiteController extends BaseController
 		}else if(preg_match('/en-us/')){
 
 		}*/
-		
 		$serverIp = $_SERVER['SERVER_ADDR'];
 		return $this->render('index',[
 			'code'=>0,
-			'keys'=>$keys,
-			'keyword'=>$keyword,
-			'pagination'=>$pagination2,
 			'info'=>$info,
 			'count'=>$count,
-			'match_count'=>$matchCount,
-			'match_count_real'=>$matchCountReal,
 			'server_ip'=>$serverIp,
 			'delete_auth'=>true,
 			'databaseCount'=>$databaseCount,
 			'db'=>$db,
-			'username' => $username,
 		]);
 	}
 	
 	/**
-	 * get reids value by key
+	 * Key list
 	 * @return string
+	 * @throws \yii\base\InvalidConfigException
+	 */
+	public function actionGetKeyList(){
+		$isGuest = Yii::$app->user->isGuest;
+		if($isGuest){
+			return json_encode(['code'=>-1,'msg'=>'Please login']);
+		}
+		
+		//Get params
+		$request = Yii::$app->request;
+		$keyword = $request->get('keyword','');
+		$keyword = trim($keyword);
+		$iterator = $request->get('iterator', 0);
+		
+		//Decide Wich db's data should be show
+		$db = $request->get('db',0);
+		
+		//Connect redis
+		$redis = $this->connectRedis();
+		//Select db(default 16 db, first db is 0, last is 15)
+		$redis->select($db);
+		$pageSize = Yii::$app->params['pageSize'] ?? 10;
+		$data = $redis->scan($iterator, ['match'=>"*{$keyword}*", 'count'=>$pageSize]);
+		$keys = $data[1];
+		$iterator = $data[0];
+		return json_encode(['code' => 0, 'keys' => $keys, 'iterator' => $iterator]);
+	}
+	
+	/**
+	 * getRedisVal
+	 * @return string
+	 * @throws \yii\base\InvalidConfigException
 	 */
 	public function actionGetRedisVal(){
 		if(Yii::$app->user->isGuest){
@@ -272,8 +286,9 @@ class SiteController extends BaseController
 	}
 	
 	/**
-	 * View Redis Value
-	 * @return string
+	 * View redis value in a new page(expecially for long result)
+	 * @return string|Response
+	 * @throws \yii\base\InvalidConfigException
 	 */
 	public function actionViewRedisValue(){
 		if(Yii::$app->user->isGuest){
@@ -313,13 +328,15 @@ class SiteController extends BaseController
 				'value'=>$arr['value'],
 				'value_type'=>$arr['value_type'],
 				'ttl'=>$ttl,
+				'server_ip' => $_SERVER['SERVER_ADDR'],
 			]);
 		}
 	}
 	
 	/**
-	 * delete redis key
+	 * Delete a reidis key
 	 * @return string
+	 * @throws \yii\base\InvalidConfigException
 	 */
 	public function actionDelRedisKey(){
 		if(Yii::$app->user->isGuest){
@@ -334,11 +351,13 @@ class SiteController extends BaseController
 		$redis = $this->connectRedis();
 		$redis->select($db);
 		if(is_array($keys)){
-			$pipe = $redis->multi(Redis::PIPELINE);
+			// $pipe = $redis->multi(Redis::PIPELINE);
+			$pipe = $redis->pipeline();
+			// $pipe = $redis->multi();
 			foreach($keys as $key){
 				$pipe->del($key);
 			}
-			$pipe_lines = $pipe->exec();
+			$pipe_lines = $pipe->execute();
 			return json_encode(['code'=>0,'msg'=>'del succeed','pipe_line_results'=>json_encode($pipe_lines)]);
 		}else{
 			if($redis->del($keys)){
@@ -348,8 +367,9 @@ class SiteController extends BaseController
 	}
 	
 	/**
-	 * flushdb or flushall
+	 * Flush current db or all db, may sure you know what you are doing, it's dangerous
 	 * @return string
+	 * @throws \yii\base\InvalidConfigException
 	 */
 	public function actionFlushDb(){
 		if(Yii::$app->user->isGuest){

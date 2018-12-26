@@ -5,7 +5,12 @@
  * Date: 13/04/2017
  * Time: 16:37
  */
-$this->title = 'Redis Manager';
+$title = 'Redis Manager';
+if($server_ip=='127.0.0.1'){
+	$this->title = '[local]-'.$title;
+}else{
+	$this->title = '[remote]-'.$title;
+}
 $controller = $this->context->id;
 $action = $this->context->action->id;
 ?>

@@ -25,7 +25,6 @@ $valDisplayType = Yii::$app->params['valDisplayType'] ?? 'popup';
 
 <style type="text/css">
 	.container {
-		max-width: 99%;
 		font-size: 14px;
 	}
     @-moz-document url-prefix() {
@@ -37,6 +36,9 @@ $valDisplayType = Yii::$app->params['valDisplayType'] ?? 'popup';
     #key-list{
         /*margin:0 200px 0 200px;*/
     }
+	#key-list .first-row{
+		font-weight: bold;
+	}
     .table-hover > tbody > tr:hover > td,
     .table-hover > tbody > tr:hover > th {
         background-color: #f5f4e5;
@@ -50,6 +52,9 @@ $valDisplayType = Yii::$app->params['valDisplayType'] ?? 'popup';
     }
     .pointer{
         cursor:pointer;
+    }
+    .cursor-not-allowed {
+	    cursor: not-allowed;
     }
     .redis-value{
         display: none;
@@ -73,118 +78,91 @@ $valDisplayType = Yii::$app->params['valDisplayType'] ?? 'popup';
 	#redis-value-modal .modal-dialog{
 		width: <?=Yii::$app->params['modalWidth']??''?>;
 	}
+	.key-name{
+		text-decoration: underline;
+		color: #337ab7;
+		cursor: pointer;
+	}
 </style>
 
 <div class="table-responsive" id="key-list">
-    <div class="container">
-        <table class="table table-hover table-striped table-bordered table-condensed">
-            <thead>
-            <tr>
-                <th colspan="3">
-                    Redis Server Info:
-                    <span style="font-weight: normal;">
+	<table class="table table-hover table-striped table-bordered table-condensed">
+		<thead>
+		<tr>
+			<th colspan="3">
+				Redis Server Info:
+				<span style="font-weight: normal;">
                         <?php if($code==0):?>
-                            <span class="underline">server ip</span>：<span><?=$server_ip?></span> |
-                            <span class="underline">redis_version</span>: <span class="red"><?=$info['redis_version']?></span> |
-                            <span class="underline">os</span>: <span class="red"><?=$info['os']?></span> |
-                            <span class="underline">redis_mode</span>: <span class="red"><?=$info['redis_mode']?></span> |
-                            <span class="underline">used_memory</span>: <span class="red"><?=$info['used_memory_human']?></span> |
+	                        <span class="underline">server ip</span>：<span><?=$server_ip?></span> |
+                            <span class="underline">redis_version</span>: <span class="red"><?=$info['Server']['redis_version']?></span> |
+                            <span class="underline">os</span>: <span class="red"><?=$info['Server']['os']?></span> |
+                            <span class="underline">redis_mode</span>: <span class="red"><?=$info['Server']['redis_mode']?></span> |
+                            <span class="underline">used_memory</span>: <span class="red"><?=$info['Memory']['used_memory_human']?></span> |
                             <select name="db">
 		                        <?php for($i=0;$i<$databaseCount;$i++):?>
-		                        <option value="<?=$i?>"<?=$db==$i?' selected':''?>>db <?=$i?></option>
-	                            <?php endfor;?>
+			                        <option value="<?=$i?>"<?=$db==$i?' selected':''?>>db <?=$i?></option>
+		                        <?php endfor;?>
                             </select> |
                             <a href="javascript:void(0);" class="flush-db" title="Click to flush current db">FlushDB</a> |
                             <a href="javascript:void(0);" class="flush-all" title="Click to flush all db">FlushAll</a>
                         <?php else:?>
-                            <span class="underline">server ip</span>：<span><?=$serverIp?></span> |
+	                        <span class="underline">server ip</span>：<span><?=$serverIp?></span> |
                             <span class="red"><?=$error_msg?></span>
                         <?php endif;?>
                     </span>
-                </th>
-            </tr>
-            <tr>
-                <th colspan="3">
-                    <form>
-                        <input type="input" name="keyword" placeholder="Please enter keyword" class="form-control pull-left keyword" value="<?=$keyword?>">
-	                    <input type="hidden" name="db" value="<?=$db?>">
-                        <button type="submit" class="btn btn-primary pull-left search-btn">Search</button>
-                    </form>
-                </th>
-            </tr>
-            <tr>
-                <th colspan="3">
-                    Quick Search:
-	                <?php if(!empty($quickSearch)):?>
-	                <?php foreach($quickSearch as $val):?>
-		                <a href="<?=$link.$val?>" class="quick-search"><?=$val?></a>
-	                <?php endforeach;?>
-	                <?php endif;?>
-                </th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr style="font-weight: bold;">
-                <td class="col-xs-1 text-center">
-                    <label>
-                        <input type="checkbox" class="select-all">
-                    </label>
-                </td>
-                <td class="text-center cursor-default">Key Name (Click to preview value)</td>
-                <td class="col-xs-1 text-center cursor-default">Operation</td>
-            </tr>
-            <?php if($keys):?>
-                <?php foreach($keys as $key):?>
-                    <tr>
-                        <td class="text-center col-xs-1">
-                            <input type="checkbox" name="keys[]" value="<?=$key?>">
-                        </td>
-                        <td class="col-xs-9">
-                            <a class="key-name" role="button" data-toggle="popover" data-container="body" title="click to preview value of key: <?=$key?>" data-content="" data-html="true" data-placement="bottom"><?=$key?></a>
-	                        <div class="redis-value"></div>
-                        </td>
-                        <td class="text-center col-xs-2">
-                            <a href="/<?=$controller?>/view-redis-value?<?=$queryString?>specified_key=<?=$key?>" title="Click to view value in new page" class="btn btn-info view-in-new-page">View</a>
-	                        <button type="button" class="btn btn-danger delete" title="Click to delete key" key="<?=$key?>">Delete</button>
-                        </td>
-                    </tr>
-                <?php endforeach;?>
-                <tr>
-                    <td class="text-center">
-                        <label>
-                            <input type="checkbox" class="select-all">
-                        </label>
-                    </td>
-                    <td style="font-weight: bold;">
-                        Total Count: <span class="red"><?=$count?></span> keys
-                        <?php if($keyword):?>
-                            , Match Count: <span class="red"><?=$match_count_real ? $match_count : 'more than '.$match_count?></span>
-                        <?php endif;?>
-                    </td>
-                    <td class="text-center">
-                        <button type="button" class="btn btn-danger batch-delete">Batch Del</button>
-                    </td>
-                </tr>
-            <?php else:?>
-                <tr>
-                    <td colspan="3" class="text-center" style="height:50px;">no result</td>
-                </tr>
-            <?php endif;?>
-            </tbody>
-        </table>
-    </div>
+			</th>
+		</tr>
+		<tr>
+			<th colspan="3">
+				<form id="search-form">
+					<input type="input" name="keyword" placeholder="Please enter keyword" class="form-control pull-left keyword" value="">
+					<button type="submit" class="btn btn-primary pull-left search-btn">Search</button>
+				</form>
+			</th>
+		</tr>
+		<tr>
+			<th colspan="3">
+				Quick Search:
+				<?php if(!empty($quickSearch)):?>
+					<?php foreach($quickSearch as $val):?>
+						<a href="<?=$link.$val?>" class="quick-search"><?=$val?></a>
+					<?php endforeach;?>
+				<?php endif;?>
+			</th>
+		</tr>
+		</thead>
+		<tbody>
+		<tr class="first-row">
+			<td class="col-xs-1 text-center">
+				<label>
+					<input type="checkbox" class="select-all">
+				</label>
+			</td>
+			<td class="text-center cursor-default">Key Name (Click to preview value)</td>
+			<td class="col-xs-1 text-center cursor-default">Operation</td>
+		</tr>
+		<!-- key list row insert here (after .first-row) -->
+		<tr>
+			<td class="text-center">
+				<label>
+					<input type="checkbox" class="select-all">
+				</label>
+			</td>
+			<td style="font-weight: bold;">
+				Total Count: <span class="red"><?=$count?></span> keys
+			</td>
+			<td class="text-center">
+				<button type="button" class="btn btn-danger batch-delete">Batch Del</button>
+			</td>
+		</tr>
+		<!--<tr>
+			<td colspan="3" class="text-center" style="height:50px;">no result</td>
+		</tr>-->
+		</tbody>
+	</table>
 </div>
 <div class="text-center">
-    <?php
-    if($pagination){
-        echo \yii\widgets\LinkPager::widget([
-            'pagination' => $pagination,
-	        'nextPageLabel' => 'Next',
-	        'prevPageLabel' => 'Prev',
-	        'maxButtonCount' => 0
-        ]);
-    }
-    ?>
+	<button class="btn btn-primary load-more">Load More</button>
 </div>
 
 <!-- Modal popup -->
@@ -214,14 +192,88 @@ $valDisplayType = Yii::$app->params['valDisplayType'] ?? 'popup';
 	popover
 </a>-->
 <script>
+	var controller = '<?=$controller?>';
+	var action = '<?=$action?>';
+	var db = $('select[name="db"]').val();
+	
+	function getKeyList(iterator, keyword, action){
+		$.ajax({
+			type: 'get',
+			url: '/'+controller+'/get-key-list',
+			data: {
+				db:db,
+				iterator: iterator,
+				keyword: keyword,
+			},
+			dataType: 'json',
+			success: function (response){
+				if(response.code == 0){
+					var keys = response.keys;
+					var row = '';
+					var lastrow = '';
+					for(var i=0;i<keys.length;i++){
+						lastrow = i==keys.length - 1 ? ' last-row' : '';
+						row += '<tr class="inserted-row'+lastrow+'">';
+						row += '<td class="text-center col-xs-1">';
+						row += 		'<input type="checkbox" name="keys[]" value="'+keys[i]+'">';
+						row += 	'</td>';
+						row += 	'<td class="col-xs-9">';
+						row += 	'<span class="key-name" title="click to preview value of key: '+keys[i]+'">'+keys[i]+'</span>';
+						row += 		'<div class="redis-value"></div>';
+						row += 		'</td>';
+						row += 		'<td class="text-center col-xs-2">';
+						row += 		'<a href="/<?=$controller?>/view-redis-value?<?=$queryString?>specified_key='+keys[i]+'" title="Click to view value in new page" class="btn btn-info view-in-new-page">View</a>';
+						row += 		'<button type="button" class="btn btn-danger delete" title="Click to delete key" key="'+keys[i]+'">Delete</button>';
+						row += 	'</td>';
+						row += '</tr>';
+					}
+					switch (action){
+						case 'index':
+							$('#key-list .first-row').after(row);
+							break;
+						case 'search':
+							$('#key-list .inserted-row').remove();
+							$('#key-list .first-row').after(row);
+							break;
+						case 'loadmore':
+							$('#key-list .last-row').after(row);
+							$('.load-more').attr('isclick', 0);
+					}
+					$('.load-more').data('iterator', response.iterator);
+					if(response.iterator==0){
+						$('.load-more').removeClass('btn-primary').addClass('disabled');
+					}
+				}else{
+					console.log(response);
+				}
+			}
+		});
+	}
+	
     $(document).ready(function (){
-        //tool tip
-        /*$('[data-toggle="popover"]').popover();
-        $('a[role="tooltip"]').click(function (e){
-            e.stopPropagation();
-        });*/
-		
-	    // $('[data-toggle="popover"]').popover();
+    	// load first page
+        getKeyList(0, '', 'index');
+        
+        //loadmore
+        $('.load-more').on('click', function (){
+        	if($(this).attr('isclick')==1){
+        		return false;
+	        }
+	        $(this).attr('isclick', 1);
+        	if($(this).hasClass('disabled')){
+        		return false;
+	        }
+	        var iterator = $('.load-more').data('iterator');
+	        var keyword = $('#search-form input[name="keyword"]').val().trim();
+	        getKeyList(iterator, keyword, 'loadmore');
+        });
+	
+        // search
+	    $('#search-form').on('submit', function (){
+		    var keyword = $('#search-form input[name="keyword"]').val().trim();
+		    getKeyList(0, keyword, 'search');
+		    return false;
+	    });
         
         var controller = '<?=$controller?>';
         var csrfToken = $('meta[name="csrf-token"]').attr('content');
@@ -262,9 +314,10 @@ $valDisplayType = Yii::$app->params['valDisplayType'] ?? 'popup';
                 }
             });
         });
-
+	
         // Preview value of the key
-        $('.key-name').on('click', function (){
+	    // $('#key-list').on('click','.delete',function (){
+        $('#key-list').on('click','.key-name', function (){
             var $this = $(this);
 	        <?php if($valDisplayType=='inline'):?>
             if($this.next().is(':visible')){
@@ -342,7 +395,7 @@ $valDisplayType = Yii::$app->params['valDisplayType'] ?? 'popup';
         });
 
         // click row to check the checkbox
-        $('#key-list table tbody tr').on('click', function (){
+        $('#key-list table tbody').on('click', 'tr', function (){
             var checkbox_obj = $(this).find('input[type="checkbox"]');
             if(checkbox_obj.length){
                 if(checkbox_obj.hasClass('select-all')){

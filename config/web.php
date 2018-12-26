@@ -16,7 +16,7 @@ if($_SERVER['REMOTE_ADDR']=='127.0.0.1'){
 
 $config = [
     'id' => 'basic',
-	'name' => 'RedisWebManager',
+	'name' => 'RWM',
     'basePath' => dirname(__DIR__),
     'bootstrap' => ['log'],
 	// 'defaultRoute' => 'index',
@@ -62,6 +62,7 @@ $config = [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
+            
             ],
         ],
         
