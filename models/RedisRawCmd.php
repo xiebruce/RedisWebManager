@@ -269,6 +269,7 @@ class RedisRawCmd extends BaseObject {
 		'bgsave' => '',
 		'bgrewriteaof' => '',
 		'shutdown' => '',
+		'quit' => '',
 	];
 	
 	public function __get($propertyName){
@@ -381,6 +382,8 @@ class RedisRawCmd extends BaseObject {
 					if($result!=''){
 						if(!preg_match('/[\$|\*][\d+|-]/', $result, $match)){
 							// $data[$i][] = $result;
+							$result = preg_replace('/^\+(.*?)\s+/', '$1', $result);
+							$result = preg_replace('/^:(.*?)\s+/', '(integer) $1', $result);
 							$data[] = $result;
 						}
 					}
