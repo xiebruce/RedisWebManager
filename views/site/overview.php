@@ -13,8 +13,6 @@ if($server_ip=='127.0.0.1'){
 	$this->title = '[remote]-'.$title;
 }
 
-// \yii\helpers\VarDumper::dump($info, 10, true);
-
 ?>
 <style>
 	.col-one {
