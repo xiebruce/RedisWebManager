@@ -174,7 +174,6 @@ $redis = Yii::$app->redis;
 		
 		//Select db
 		$('select[name="db"]').on('change', function (){
-			console.log(111);
 			var db = $(this).val();
 			var link = window.location.href
 			if(link.indexOf('db=')>-1){
@@ -196,7 +195,7 @@ $redis = Yii::$app->redis;
 				url:'',
 				data:{
 					cmd:$('#command').val(),
-					csrf:csrfToken,
+					_csrf:csrfToken,
 				},
 				dataType:'json',
 				success:function (response){
