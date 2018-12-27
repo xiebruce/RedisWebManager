@@ -139,9 +139,9 @@ class SiteController extends BaseController
 			$cmd = Yii::$app->request->post('cmd', '');
 			$cmd = strtoupper(trim($cmd));
 			$arr = explode(' ', $cmd);
-			$cmd = $arr[0];
-			if(array_key_exists($cmd, $redis->excludeCmd)){
-				$msg = $redis->excludeCmd[$cmd]!='' ? $redis->excludeCmd[$cmd] : 'This command is not supported in the tool';
+			$cmdKey = $arr[0];
+			if(array_key_exists($cmdKey, $redis->excludeCmd)){
+				$msg = $redis->excludeCmd[$cmdKey]!='' ? $redis->excludeCmd[$cmdKey] : 'This command is not supported in the tool';
 				return json_encode(['code' => -1, 'msg' => $msg]);
 			}
 			$res = [];
