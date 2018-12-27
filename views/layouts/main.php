@@ -21,8 +21,8 @@ AppAsset::register($this);
     <?= Html::csrfMetaTags() ?>
     <title><?= Html::encode($this->title) ?></title>
 	
-	<script src="/js/jquery.min.js"></script>
-	<script src="/bootstrap-3.3.7-dist/js/bootstrap.js"></script>
+	<script src="/js/jquery-2.1.1.min.js"></script>
+	<script src="/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
 	<!-- Latest compiled and minified CSS -->
 	<link rel="stylesheet" href="/bootstrap-3.3.7-dist/css/bootstrap.min.css">
 	<!-- Optional theme -->

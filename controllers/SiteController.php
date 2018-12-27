@@ -6,13 +6,11 @@ use app\models\RedisRawCmd;
 use app\models\Sqlite;
 use Predis\Client;
 use Yii;
-use Redis;
 use yii\filters\AccessControl;
 use yii\helpers\VarDumper;
 use yii\web\Response;
 use yii\filters\VerbFilter;
 use app\models\LoginForm;
-use yii\data\Pagination;
 
 class SiteController extends BaseController
 {
@@ -56,6 +54,11 @@ class SiteController extends BaseController
                 'fixedVerifyCode' => YII_ENV_TEST ? 'testme' : null,
             ],
         ];
+    }
+    
+    public function actionNavTabs(){
+    	$this->layout = false;
+    	return $this->render('nav-tabs');
     }
     
 	/**
@@ -199,6 +202,7 @@ class SiteController extends BaseController
 		}else if(preg_match('/en-us/')){
 
 		}*/
+		$keyword = Yii::$app->request->get('keyword','');
 		$serverIp = $_SERVER['SERVER_ADDR'];
 		return $this->render('index',[
 			'code'=>0,
@@ -208,6 +212,7 @@ class SiteController extends BaseController
 			'delete_auth'=>true,
 			'databaseCount'=>$databaseCount,
 			'db'=>$db,
+			'keyword' => $keyword,
 		]);
 	}
 	

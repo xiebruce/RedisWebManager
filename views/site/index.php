@@ -15,9 +15,6 @@ if($server_ip=='127.0.0.1'){
 
 $controller = $this->context->id;
 $action = $this->context->action->id;
-$link = '/'.$controller.'/'.$action.'?keyword=';
-$queryString = Yii::$app->request->queryString;
-$queryString = $queryString ? $queryString.'&' : '';
 
 $quickSearch = Yii::$app->params['quickSearch'];
 $valDisplayType = Yii::$app->params['valDisplayType'] ?? 'popup';
@@ -115,19 +112,21 @@ $valDisplayType = Yii::$app->params['valDisplayType'] ?? 'popup';
 		<tr>
 			<th colspan="3">
 				<form id="search-form">
-					<input type="input" name="keyword" placeholder="Please enter keyword" class="form-control pull-left keyword" value="">
+					<input type="input" name="keyword" placeholder="Please enter keyword" class="form-control pull-left keyword" value="<?=$keyword?>">
 					<button type="submit" class="btn btn-primary pull-left search-btn">Search</button>
 				</form>
 			</th>
 		</tr>
 		<tr>
 			<th colspan="3">
-				Quick Search:
-				<?php if(!empty($quickSearch)):?>
-					<?php foreach($quickSearch as $val):?>
-						<a href="<?=$link.$val?>" class="quick-search"><?=$val?></a>
-					<?php endforeach;?>
-				<?php endif;?>
+				<span>Quick Search:</span>
+				<span>
+					<?php if(!empty($quickSearch)):?>
+						<?php foreach($quickSearch as $val):?>
+							<a href="<?=$val?>" class="quick-search"><?=$val?></a>
+						<?php endforeach;?>
+					<?php endif;?>
+				</span>
 			</th>
 		</tr>
 		</thead>
@@ -196,7 +195,7 @@ $valDisplayType = Yii::$app->params['valDisplayType'] ?? 'popup';
 	var action = '<?=$action?>';
 	var db = $('select[name="db"]').val();
 	
-	function getKeyList(iterator, keyword, action){
+	function getKeyList(iterator, keyword, operation){
 		$.ajax({
 			type: 'get',
 			url: '/'+controller+'/get-key-list',
@@ -211,6 +210,12 @@ $valDisplayType = Yii::$app->params['valDisplayType'] ?? 'popup';
 					var keys = response.keys;
 					var row = '';
 					var lastrow = '';
+					var url = window.location.origin + '/' +controller + '/view-redis-value';
+					if(window.location.search==''){
+						url = location.origin + '?';
+					}else{
+						url += window.location.search + '&';
+					}
 					for(var i=0;i<keys.length;i++){
 						lastrow = i==keys.length - 1 ? ' last-row' : '';
 						row += '<tr class="inserted-row'+lastrow+'">';
@@ -222,12 +227,12 @@ $valDisplayType = Yii::$app->params['valDisplayType'] ?? 'popup';
 						row += 		'<div class="redis-value"></div>';
 						row += 		'</td>';
 						row += 		'<td class="text-center col-xs-2">';
-						row += 		'<a href="/<?=$controller?>/view-redis-value?<?=$queryString?>specified_key='+keys[i]+'" title="Click to view value in new page" class="btn btn-info view-in-new-page">View</a>';
+						row += 		'<a href="'+url+'specified_key=' + keys[i] + '" title="Click to view value in new page" class="btn btn-info view-in-new-page">View</a>';
 						row += 		'<button type="button" class="btn btn-danger delete" title="Click to delete key" key="'+keys[i]+'">Delete</button>';
 						row += 	'</td>';
 						row += '</tr>';
 					}
-					switch (action){
+					switch (operation){
 						case 'index':
 							$('#key-list .first-row').after(row);
 							break;
@@ -252,7 +257,15 @@ $valDisplayType = Yii::$app->params['valDisplayType'] ?? 'popup';
 	
     $(document).ready(function (){
     	// load first page
-        getKeyList(0, '', 'index');
+	    var keyword = $('#search-form input[name="keyword"]').val().trim();
+        getKeyList(0, keyword, 'index');
+        
+        // Click quick search key
+        $('.quick-search').on('click', function (e){
+	        $('#search-form input[name="keyword"]').val($(this).html());
+	        $('#search-form .search-btn').click();
+	        e.preventDefault();
+        });
         
         //loadmore
         $('.load-more').on('click', function (){
@@ -271,6 +284,17 @@ $valDisplayType = Yii::$app->params['valDisplayType'] ?? 'popup';
         // search
 	    $('#search-form').on('submit', function (){
 		    var keyword = $('#search-form input[name="keyword"]').val().trim();
+		    var history_url = window.location.href;
+		    if(history_url.indexOf('keyword=')>-1){
+			    history_url = history_url.replace(/keyword=(?:\w)*/, 'keyword='+keyword);
+		    }else{
+			    if(window.location.search){
+				    history_url += '&keyword='+keyword;
+			    }else{
+				    history_url = window.location.origin + '?keyword='+keyword;
+			    }
+		    }
+		    window.history.pushState({}, null, history_url);
 		    getKeyList(0, keyword, 'search');
 		    return false;
 	    });

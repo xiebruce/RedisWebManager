@@ -384,6 +384,7 @@ class RedisRawCmd extends BaseObject {
 							// $data[$i][] = $result;
 							$result = preg_replace('/^\+(.*?)\s+/', '$1', $result);
 							$result = preg_replace('/^:(.*?)\s+/', '(integer) $1', $result);
+							$result = preg_replace('/(.*?)\s+/', '$1', $result);
 							$data[] = $result;
 						}
 					}

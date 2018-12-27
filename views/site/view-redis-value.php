@@ -29,6 +29,9 @@ $action = $this->context->action->id;
 	.errMsg{
 		color: #FF0000;
 	}
+	.redis-value{
+		padding: 10px;
+	}
 </style>
 
 <div class="table-responsive" id="key-list">
@@ -66,7 +69,7 @@ $action = $this->context->action->id;
 				<?php if($code==0):?>
 				<tr>
 					<td>
-						<div>
+						<div class="redis-value">
 				            <?php
 					            // \yii\helpers\VarDumper::dump($value, 10, true);
 					            echo \yii\helpers\VarDumper::dumpAsString($value, 10, true);

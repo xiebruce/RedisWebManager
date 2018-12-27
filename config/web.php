@@ -65,7 +65,22 @@ $config = [
             
             ],
         ],
-        
+	    'assetManager' => [
+		    'bundles' => [
+			    'yii\bootstrap\BootstrapAsset' => [
+				    'css' => [],  // 去除 bootstrap.css
+				    'sourcePath' => null, // 防止在 frontend/web/asset 下生产文件
+			    ],
+			    'yii\bootstrap\BootstrapPluginAsset' => [
+				    'js' => [],  // 去除 bootstrap.js
+				    'sourcePath' => null,  // 防止在 frontend/web/asset 下生产文件
+			    ],
+			    'yii\web\JqueryAsset' => [
+				    'js' => [],  // 去除 jquery.js
+				    'sourcePath' => null,  // 防止在 frontend/web/asset 下生产文件
+			    ],
+		    ],
+	    ],
     ],
     'params' => $params,
 ];
