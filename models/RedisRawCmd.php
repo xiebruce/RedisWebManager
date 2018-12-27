@@ -263,6 +263,12 @@ class RedisRawCmd extends BaseObject {
 		'MONITOR' => '',
 		'SLAVEOF' => '',
 		'SELECT' => 'Please select db on select form',
+		'exec' => '',
+		'discard' => '',
+		'sync' => '',
+		'bgsave' => '',
+		'bgrewriteaof' => '',
+		'shutdown' => '',
 	];
 	
 	public function __get($propertyName){
