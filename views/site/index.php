@@ -212,7 +212,7 @@ $valDisplayType = Yii::$app->params['valDisplayType'] ?? 'popup';
 					var lastrow = '';
 					var url = window.location.origin + '/' +controller + '/view-redis-value';
 					if(window.location.search==''){
-						url = location.origin + '?';
+						url += '?';
 					}else{
 						url += window.location.search + '&';
 					}
