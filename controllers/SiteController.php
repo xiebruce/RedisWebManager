@@ -125,6 +125,12 @@ class SiteController extends BaseController
 	 * @throws \yii\base\InvalidConfigException
 	 */
 	public function actionRedisCli(){
+		//Check login status
+		$isGuest = Yii::$app->user->isGuest;
+		if($isGuest){
+			return $this->redirect('/site/login');
+		}
+		
 		/** @var Client $redisConfig */
 		$redisConfig = Yii::$app->get('redis');
 		$db = Yii::$app->request->get('db', 0);
