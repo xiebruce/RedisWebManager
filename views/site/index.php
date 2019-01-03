@@ -232,29 +232,35 @@ $valDisplayType = Yii::$app->params['valDisplayType'] ?? 'popup';
 				if(response.code == 0){
 					var keys = response.keys;
 					var row = '';
-					var lastrow = '';
-					var url = window.location.origin + '/' +controller + '/view-redis-value';
-					if(window.location.search==''){
-						url += '?';
+					if(keys.length){
+						var lastrow = '';
+						var url = window.location.origin + '/' +controller + '/view-redis-value';
+						if(window.location.search==''){
+							url += '?';
+						}else{
+							url += window.location.search + '&';
+						}
+						for(var i=0;i<keys.length;i++){
+							lastrow = i==keys.length - 1 ? ' last-row' : '';
+							row += '<tr class="inserted-row'+lastrow+'">';
+							row += '<td class="text-center col-xs-1">';
+							row += 		'<input type="checkbox" name="keys[]" value="'+keys[i]+'">';
+							row += 	'</td>';
+							row += 	'<td class="col-xs-9">';
+							row += 	'<span class="key-name" title="click to preview value of key: '+keys[i]+'">'+keys[i]+'</span>';
+							row += 		'<div class="redis-value"></div>';
+							row += 		'</td>';
+							row += 		'<td class="text-center col-xs-2">';
+							row += 		'<a href="'+url+'specified_key=' + keys[i] + '" title="Click to view value in new page" class="btn btn-info view-in-new-page">View</a>';
+							row += 		'<button type="button" class="btn btn-danger delete" title="Click to delete key" key="'+keys[i]+'">Delete</button>';
+							row += 	'</td>';
+							row += '</tr>';
+						}
 					}else{
-						url += window.location.search + '&';
+						// keys为空
+						row += '<tr class="inserted-row"><td colspan="3" class="text-center" style="height:50px;">no result</td></tr>';
 					}
-					for(var i=0;i<keys.length;i++){
-						lastrow = i==keys.length - 1 ? ' last-row' : '';
-						row += '<tr class="inserted-row'+lastrow+'">';
-						row += '<td class="text-center col-xs-1">';
-						row += 		'<input type="checkbox" name="keys[]" value="'+keys[i]+'">';
-						row += 	'</td>';
-						row += 	'<td class="col-xs-9">';
-						row += 	'<span class="key-name" title="click to preview value of key: '+keys[i]+'">'+keys[i]+'</span>';
-						row += 		'<div class="redis-value"></div>';
-						row += 		'</td>';
-						row += 		'<td class="text-center col-xs-2">';
-						row += 		'<a href="'+url+'specified_key=' + keys[i] + '" title="Click to view value in new page" class="btn btn-info view-in-new-page">View</a>';
-						row += 		'<button type="button" class="btn btn-danger delete" title="Click to delete key" key="'+keys[i]+'">Delete</button>';
-						row += 	'</td>';
-						row += '</tr>';
-					}
+					
 					switch (operation){
 						case 'index':
 						case 'search':
