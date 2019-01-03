@@ -82,6 +82,9 @@ $valDisplayType = Yii::$app->params['valDisplayType'] ?? 'popup';
 	}
 </style>
 
+<script src="/plugins/progress-bar/progress.js"></script>
+<link href="/plugins/progress-bar/ui.progress-bar.css" type="text/css" rel="Stylesheet">
+
 <div class="table-responsive" id="key-list">
 	<table class="table table-hover table-striped table-bordered table-condensed">
 		<thead>
@@ -196,6 +199,27 @@ $valDisplayType = Yii::$app->params['valDisplayType'] ?? 'popup';
 	var db = $('select[name="db"]').val();
 	
 	function getKeyList(iterator, keyword, operation){
+		$('#key-list .inserted-row').remove();
+		// console.log($('#key-list .progress-row').length);
+		// console.log($('#key-list .inserted-row').length);
+		setTimeout(function (){
+			if(!$('#key-list .progress-row').length && !$('#key-list .inserted-row').length){
+				var progressRow = '';
+				progressRow += '<tr class="progress-row">';
+				progressRow += '<td colspan="3">';
+				progressRow += '<div id="progress_bar" class="ui-progress-bar ui-container">';
+				progressRow += '<div class="ui-progress" style="width: 0%;">';
+				progressRow += '<span class="ui-label" style="display: block;">0%</span>';
+				progressRow += '</div>';
+				progressRow += '</div>';
+				progressRow += '</td>';
+				progressRow += '</tr>';
+				$('#key-list .first-row').after(progressRow);
+				getSearchProgress();
+			}
+		}, 800);
+		
+		
 		$.ajax({
 			type: 'get',
 			url: '/'+controller+'/get-key-list',
@@ -234,22 +258,52 @@ $valDisplayType = Yii::$app->params['valDisplayType'] ?? 'popup';
 					}
 					switch (operation){
 						case 'index':
-							$('#key-list .first-row').after(row);
-							break;
 						case 'search':
-							$('#key-list .inserted-row').remove();
-							$('#key-list .first-row').after(row);
+							if($('#key-list .progress-row').length){
+								$('#progress_bar .ui-progress').css('width','100%');
+								$('#progress_bar .ui-progress .ui-label').html('100%');
+								setTimeout(function (){
+									$('#key-list .progress-row').hide(function (){
+										$(this).remove();
+										$('#key-list .first-row').after(row);
+									});
+								}, 100);
+							}else{
+								$('#key-list .first-row').after(row);
+							}
 							break;
 						case 'loadmore':
 							$('#key-list .last-row').after(row);
 							$('.load-more').attr('isclick', 0);
 					}
+					$('#key-list .inserted-row').fadeIn(500);
 					$('.load-more').data('iterator', response.iterator);
 					if(response.iterator==0){
 						$('.load-more').removeClass('btn-primary').addClass('disabled');
 					}
 				}else{
 					console.log(response);
+				}
+			}
+		});
+	}
+	
+	//update search progress
+	function getSearchProgress(){
+		var db = $('select[name="db"]').val();
+		$.ajax({
+			type: 'get',
+			url: '/'+controller+'/search-progress',
+			data:{
+				db:db,
+			},
+			success:function (response){
+				if($('.progress-row').length){
+					$('#progress_bar .ui-progress').css('width',response);
+					$('#progress_bar .ui-progress .ui-label').html(response);
+					setTimeout(function (){
+						getSearchProgress();
+					}, 1000);
 				}
 			}
 		});
@@ -286,7 +340,7 @@ $valDisplayType = Yii::$app->params['valDisplayType'] ?? 'popup';
 		    var keyword = $('#search-form input[name="keyword"]').val().trim();
 		    var history_url = window.location.href;
 		    if(history_url.indexOf('keyword=')>-1){
-			    history_url = history_url.replace(/keyword=(?:\w)*/, 'keyword='+keyword);
+			    history_url = history_url.replace(/([&|?])(keyword=[^&]*)(&{0,1}.*)/, '$1keyword='+keyword+'$3');
 		    }else{
 			    if(window.location.search){
 				    history_url += '&keyword='+keyword;
@@ -295,6 +349,7 @@ $valDisplayType = Yii::$app->params['valDisplayType'] ?? 'popup';
 			    }
 		    }
 		    window.history.pushState({}, null, history_url);
+		    
 		    getKeyList(0, keyword, 'search');
 		    return false;
 	    });

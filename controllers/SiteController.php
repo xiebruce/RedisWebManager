@@ -228,9 +228,14 @@ class SiteController extends BaseController
 	 * @throws \yii\base\InvalidConfigException
 	 */
 	public function actionGetKeyList(){
+		// sleep(20);
 		$isGuest = Yii::$app->user->isGuest;
 		if($isGuest){
 			return json_encode(['code'=>-1,'msg'=>'Please login']);
+		}
+		$session = Yii::$app->session;
+		if($session->isActive){
+			$session->close();
 		}
 		
 		//Get params
@@ -247,10 +252,53 @@ class SiteController extends BaseController
 		//Select db(default 16 db, first db is 0, last is 15)
 		$redis->select($db);
 		$pageSize = Yii::$app->params['pageSize'] ?? 10;
-		$data = $redis->scan($iterator, ['match'=>"*{$keyword}*", 'count'=>$pageSize]);
-		$keys = $data[1];
-		$iterator = $data[0];
-		return json_encode(['code' => 0, 'keys' => $keys, 'iterator' => $iterator]);
+		$scanPageSize = Yii::$app->params['scanPageSize'] ?? $pageSize;
+		$maxLoop = Yii::$app->params['maxLoop'] ?? 100;
+		$keys = [];
+		$loop = 0;
+		$totalFetchCountKey = 'RedisWebManager_totalFetchCountKey';
+		$redis->setex($totalFetchCountKey, 600, 0);
+		while(1){
+			if($loop > $maxLoop){
+				break;
+			}
+			$data = $redis->scan($iterator, ['match'=>"*{$keyword}*", 'count'=>$scanPageSize]);
+			if(!empty($data[1])){
+				$keys = array_merge($keys, $data[1]);
+			}
+			$iterator = $data[0];
+			$fetchCount = count($keys);
+			$redis->incrby($totalFetchCountKey, $fetchCount);
+			if($fetchCount >= $pageSize || $iterator==0){
+				break;
+			}
+			// usleep(500000);
+			// sleep(1);
+			$loop++;
+		}
+		$errMsg = '';
+		if($loop > $maxLoop && empty($keys)){
+			$errMsg = 'Max loop exceeded.';
+		}
+		
+		return json_encode(['code' => 0, 'keys' => $keys, 'iterator' => $iterator, 'errMsg'=>$errMsg]);
+	}
+	
+	public function actionSearchProgress(){
+		$isGuest = Yii::$app->user->isGuest;
+		if($isGuest){
+			return json_encode(['code'=>-1,'msg'=>'Please login']);
+		}
+		//Decide Wich db's data should be show
+		$db = Yii::$app->request->get('db',0);
+		//Connect redis
+		$redis = $this->connectRedis();
+		//Select db(default 16 db, first db is 0, last is 15)
+		$redis->select($db);
+		$totalFetchCountKey = 'RedisWebManager_totalFetchCountKey';
+		$fetchCount = $redis->get($totalFetchCountKey);
+		$totalCount = $redis->dbsize();
+		return ceil($fetchCount / $totalCount * 100) . '%';
 	}
 	
 	/**
