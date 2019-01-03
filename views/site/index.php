@@ -199,26 +199,25 @@ $valDisplayType = Yii::$app->params['valDisplayType'] ?? 'popup';
 	var db = $('select[name="db"]').val();
 	
 	function getKeyList(iterator, keyword, operation){
-		$('#key-list .inserted-row').remove();
-		// console.log($('#key-list .progress-row').length);
-		// console.log($('#key-list .inserted-row').length);
-		setTimeout(function (){
-			if(!$('#key-list .progress-row').length && !$('#key-list .inserted-row').length){
-				var progressRow = '';
-				progressRow += '<tr class="progress-row">';
-				progressRow += '<td colspan="3">';
-				progressRow += '<div id="progress_bar" class="ui-progress-bar ui-container">';
-				progressRow += '<div class="ui-progress" style="width: 0%;">';
-				progressRow += '<span class="ui-label" style="display: block;">0%</span>';
-				progressRow += '</div>';
-				progressRow += '</div>';
-				progressRow += '</td>';
-				progressRow += '</tr>';
-				$('#key-list .first-row').after(progressRow);
-				getSearchProgress();
-			}
-		}, 800);
-		
+		if(operation=='index' || operation=='search'){
+			$('#key-list .inserted-row').remove();
+			setTimeout(function (){
+				if(!$('#key-list .progress-row').length && !$('#key-list .inserted-row').length){
+					var progressRow = '';
+					progressRow += '<tr class="progress-row">';
+					progressRow += '<td colspan="3">';
+					progressRow += '<div id="progress_bar" class="ui-progress-bar ui-container">';
+					progressRow += '<div class="ui-progress" style="width: 0%;">';
+					progressRow += '<span class="ui-label" style="display: block;">0%</span>';
+					progressRow += '</div>';
+					progressRow += '</div>';
+					progressRow += '</td>';
+					progressRow += '</tr>';
+					$('#key-list .first-row').after(progressRow);
+					getSearchProgress();
+				}
+			}, 800);
+		}
 		
 		$.ajax({
 			type: 'get',
