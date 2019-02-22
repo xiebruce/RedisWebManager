@@ -479,42 +479,29 @@ $valDisplayType = Yii::$app->params['valDisplayType'] ?? 'popup';
         });
 
         // click row to check the checkbox
-        $('#key-list table tbody').on('click', 'tr', function (){
+        $('#key-list table tbody').on('click', 'tr', function (e){
             var checkbox_obj = $(this).find('input[type="checkbox"]');
             if(checkbox_obj.length){
                 if(checkbox_obj.hasClass('select-all')){
                     checkbox_obj.click();
                 }else{
-                    var checked = !checkbox_obj.prop('checked');
-                    checkbox_obj.prop('checked',checked);
-                    if(!checked){
-                        $('.select-all').prop('checked',false);
-                    }else{
-                        $('#key-list table tr input[type="checkbox"]:not(".select-all")').each(function (e){
-                            checked = checked && $(this).prop('checked');
-                        });
-                        if(checked){
-                            $('.select-all').prop('checked',true);
-                        }
-                    }
+                	if(e.target.tagName != 'INPUT' && e.target.tagName != 'BUTTON') {
+		                var checked = !checkbox_obj.prop('checked');
+		                checkbox_obj.prop('checked',checked);
+		                if(!checked){
+			                $('.select-all').prop('checked',false);
+		                }else{
+			                $('#key-list table tr input[type="checkbox"]:not(".select-all")').each(function (e){
+				                checked = checked && $(this).prop('checked');
+			                });
+			                if(checked){
+				                $('.select-all').prop('checked',true);
+			                }
+		                }
+	                }
                 }
             }else{
                 console.log('something is error');
-            }
-        });
-
-        // Click check box
-        $('#key-list table tr input[type="checkbox"]:not(".select-all")').on('click',function (){
-            var checked = $(this).prop('checked');
-            if(!checked){
-                $('.select-all').prop('checked',false);
-            }else{
-                $('#key-list table tr input[type="checkbox"]:not(".select-all")').each(function (e){
-                    checked = checked && $(this).prop('checked');
-                });
-                if(checked){
-                    $('.select-all').prop('checked',true);
-                }
             }
         });
 
