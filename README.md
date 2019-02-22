@@ -12,7 +12,7 @@ Check the value inline(config option "valDisplayType" to "inline" at RedisWebMan
 <p align="center"><img src="https://img.xiebruce.top/2018/12/19/bf7d905a82004282352a1768a293e489.jpg" title="Xnip2018-12-19_01-28-54.jpg" alt="Xnip2018-12-19_01-28-54.jpg"></p>
 
 Check the value in new page(only when the data is too long, check it in new page will be more clear and comfortable):
-![Xnip2019-02-22_17-01-28.png](https://img.xiebruce.top/2019/02/22/3a427db22d0603e50e9e0b9ec9b86020.png)
+![Xnip2019-02-22_17-03-26.png](https://img.xiebruce.top/2019/02/22/e43e2abbea4f76f41328c1cb8b8eaa09.png)
 
 Overview server info:
 ![Xnip2019-02-22_16-56-56.png](https://img.xiebruce.top/2019/02/22/b7050c86f62f49389b7c99357f0a5125.png)
