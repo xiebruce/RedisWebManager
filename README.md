@@ -1,8 +1,9 @@
 
 RedisWebManager
 ===============
-Home page preview:
-<p align="center"><img src="https://img.xiebruce.top/2018/12/19/274e6fc38f6742052ac9239623bf1a94.jpg" title="Xnip2018-12-19_01-17-31.jpg" alt="Xnip2018-12-19_01-17-31.jpg"></p>
+## Preview
+Home page:
+![Xnip2019-02-22_17-01-28.png](https://img.xiebruce.top/2019/02/22/3a427db22d0603e50e9e0b9ec9b86020.png)
 
 Check the value by popup(config option "valDisplayType" to "popup" at RedisWebManager/config/params.php):
 <p align="center"><img src="https://img.xiebruce.top/2018/12/19/06b077de016906082fbd5018c2f0a831.jpg" title="Xnip2018-12-19_00-47-26.jpg" alt="Xnip2018-12-19_00-47-26.jpg"></p>
@@ -11,22 +12,29 @@ Check the value inline(config option "valDisplayType" to "inline" at RedisWebMan
 <p align="center"><img src="https://img.xiebruce.top/2018/12/19/bf7d905a82004282352a1768a293e489.jpg" title="Xnip2018-12-19_01-28-54.jpg" alt="Xnip2018-12-19_01-28-54.jpg"></p>
 
 Check the value in new page(only when the data is too long, check it in new page will be more clear and comfortable):
-<p align="center"><img src="https://img.xiebruce.top/2018/12/19/8795ec205a5a863ff280c55e23b82fc6.jpg" title="Xnip2018-12-19_01-25-33.jpg" alt="Xnip2018-12-19_01-25-33.jpg"></p>
+![Xnip2019-02-22_17-01-28.png](https://img.xiebruce.top/2019/02/22/3a427db22d0603e50e9e0b9ec9b86020.png)
 
-As you can see above, RedisWebManager Show the origin value(maybe array or object) not simply a json string or a serialized string, this is the advantage of this tool(unserializing string only support PHP for the present).
+Overview server info:
+![Xnip2019-02-22_16-56-56.png](https://img.xiebruce.top/2019/02/22/b7050c86f62f49389b7c99357f0a5125.png)
+
+Web client:
+![Xnip2019-02-22_16-57-24.png](https://img.xiebruce.top/2019/02/22/e14e9c7807699916ee03ebeb342a5b32.png)
+
+As you can see above, RedisWebManager Show the origin value(maybe array or object), not just simply a json string or a serialized string, this is the advantage of this tool(unserializing string only support PHP for the present).
 
 ## 中文版本/Chinese Version
 [中文版本](https://www.xiebruce.top/664.html)
 
 ## Features
 - View the redis key list
-- Preview value of certain key(popup or in new page)
+- Preview value of a key(popup / inline / new page)
 - Preview json as array, serialized object as an object(the most important reason I wrote this tool)
 - Search by key prefix or suffix
-- Delete one key & batch delete
+- Delete key & batch delete keys
 - Select to show which db
 - Flush current db or flush all db
-- Redis server info
+- View redis server info
+- Use client directives on Web just like in Terminal
 
 ## Redis Config
 redis config is located at(auto read redis_local.php at local while redis.php online):
@@ -100,12 +108,18 @@ server {
 ```
 
 ## Update Log
+### 2019-02-22 v0.3.1
+- Fix bug when click checkbox to select a key
+- Fix bug when using not default port 6379
+- Update README.md
+
 ### 2018-12-27 v0.3
 - Add Overview server info
 - Add Web redis-cli
 - change redis client to predis(phpredis before)
 - Use ajax search other than refreshing page
 - Add load more button(remove pagination)
+
 ### 2018-12-19 v0.2
 - Add inline preview manner.
 - Add showing ttl of a key.
