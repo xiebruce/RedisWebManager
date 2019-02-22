@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "08b26c805507da106a65b5b9ad51856e",
+    "content-hash": "24c667590224fe0631618158f6075bbf",
     "packages": [
         {
             "name": "bower-asset/bootstrap",
@@ -244,6 +244,49 @@
             ],
             "description": "Redis Cache, Session for the Yii2",
             "time": "2017-05-07T15:50:53+00:00"
+        },
+        {
+            "name": "pavle/yii2-redis",
+            "version": "v1.1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Liv1020/yii2-redis.git",
+                "reference": "e02d59a4f6a999ef59d5ad402a96e2ac7c1ff6e3"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Liv1020/yii2-redis/zipball/e02d59a4f6a999ef59d5ad402a96e2ac7c1ff6e3",
+                "reference": "e02d59a4f6a999ef59d5ad402a96e2ac7c1ff6e3",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.4.0",
+                "predis/predis": "*",
+                "yiisoft/yii2-redis": "*"
+            },
+            "type": "yii2-extension",
+            "autoload": {
+                "psr-4": {
+                    "pavle\\yii\\redis\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Pavle Lee",
+                    "email": "523260513@qq.com"
+                }
+            ],
+            "description": "Yii 2 Redis extension with predis",
+            "keywords": [
+                "predis",
+                "redis",
+                "yii"
+            ],
+            "time": "2017-08-26T09:20:07+00:00"
         },
         {
             "name": "predis/predis",

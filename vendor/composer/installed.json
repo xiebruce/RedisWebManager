@@ -813,6 +813,51 @@
         ]
     },
     {
+        "name": "pavle/yii2-redis",
+        "version": "v1.1.1",
+        "version_normalized": "1.1.1.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/Liv1020/yii2-redis.git",
+            "reference": "e02d59a4f6a999ef59d5ad402a96e2ac7c1ff6e3"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/Liv1020/yii2-redis/zipball/e02d59a4f6a999ef59d5ad402a96e2ac7c1ff6e3",
+            "reference": "e02d59a4f6a999ef59d5ad402a96e2ac7c1ff6e3",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.4.0",
+            "predis/predis": "*",
+            "yiisoft/yii2-redis": "*"
+        },
+        "time": "2017-08-26T09:20:07+00:00",
+        "type": "yii2-extension",
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "pavle\\yii\\redis\\": "src"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "BSD-3-Clause"
+        ],
+        "authors": [
+            {
+                "name": "Pavle Lee",
+                "email": "523260513@qq.com"
+            }
+        ],
+        "description": "Yii 2 Redis extension with predis",
+        "keywords": [
+            "predis",
+            "redis",
+            "yii"
+        ]
+    },
+    {
         "name": "phar-io/manifest",
         "version": "1.0.3",
         "version_normalized": "1.0.3.0",

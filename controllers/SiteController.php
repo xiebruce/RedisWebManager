@@ -133,15 +133,19 @@ class SiteController extends BaseController
 		
 		/** @var Client $redisConfig */
 		$redisConfig = Yii::$app->get('redis');
+		$host = $redisConfig->servers['host'];
+		$port = $redisConfig->servers['port'];
+		$password = $redisConfig->servers['password'] ?? '';
+		
 		$db = Yii::$app->request->get('db', 0);
 		$redis = new RedisRawCmd([
-			'hostname' => $redisConfig->host,
-			'port' => $redisConfig->port,
+			'hostname' => $host,
+			'port' => $port,
 		]);
 		
 		if(Yii::$app->request->isAjax){
-			if(isset($redisConfig->password) && $redisConfig->password) {
-				$auth = $redis->auth($redisConfig->password);
+			if($password) {
+				$auth = $redis->auth($password);
 			}
 			$redis->select($db);
 			// $pong = $redis->ping();
@@ -161,7 +165,6 @@ class SiteController extends BaseController
 			return json_encode(['code' => 0, 'content' => $content]);
 		}
 		
-		$password = $redisConfig->password ?? '';
 		$password && $redisConfig->auth($password);
 		$redisConfig->select($db);
 		$arr = $redisConfig->config('get', 'databases');
@@ -173,6 +176,7 @@ class SiteController extends BaseController
 			'server_ip' => $serverIp,
 			'databaseCount' => $databaseCount,
 			'db' => $db,
+			'port' => $port,
 		]);
 	}
 	

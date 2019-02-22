@@ -55,7 +55,7 @@ class BaseController extends Controller
 		$redis = Yii::$app->get('redis');
 		$password = $redis->password ?? '';
 		if($password){
-			$redis->auth($password);
+			// $redis->auth($password);
 		}
 		return $redis;
 	}

@@ -1,0 +1,27 @@
+{
+  "name": "pavle/yii2-redis",
+  "description": "Yii 2 Redis extension with predis",
+  "type": "yii2-extension",
+  "keywords": [
+    "yii",
+    "redis",
+    "predis"
+  ],
+  "license": "BSD-3-Clause",
+  "require": {
+    "php": ">=5.4.0",
+    "yiisoft/yii2-redis": "*",
+    "predis/predis": "*"
+  },
+  "authors": [
+    {
+      "name": "Pavle Lee",
+      "email": "523260513@qq.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "pavle\\yii\\redis\\": "src"
+    }
+  }
+}

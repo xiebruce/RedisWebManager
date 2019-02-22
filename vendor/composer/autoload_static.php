@@ -32,6 +32,7 @@ class ComposerStaticInitc7999adc8af81ef3c594bdf59736d9e9
         'p' => 
         array (
             'phpDocumentor\\Reflection\\' => 25,
+            'pavle\\yii\\redis\\' => 16,
         ),
         'm' => 
         array (
@@ -122,6 +123,10 @@ class ComposerStaticInitc7999adc8af81ef3c594bdf59736d9e9
             0 => __DIR__ . '/..' . '/phpdocumentor/reflection-common/src',
             1 => __DIR__ . '/..' . '/phpdocumentor/reflection-docblock/src',
             2 => __DIR__ . '/..' . '/phpdocumentor/type-resolver/src',
+        ),
+        'pavle\\yii\\redis\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/pavle/yii2-redis/src',
         ),
         'mojifan\\redis\\' => 
         array (

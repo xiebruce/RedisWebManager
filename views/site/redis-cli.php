@@ -13,7 +13,6 @@ if($server_ip=='127.0.0.1'){
 	$this->title = '[remote]-'.$title;
 }
 
-$redis = Yii::$app->redis;
 ?>
 <style>
 	.auto-complete {
@@ -47,7 +46,7 @@ $redis = Yii::$app->redis;
 		<div class="row">
 			<div class="col-md-12">
 				<div class="server-info">
-					<span><?='server ip:'.$server_ip. ' port:'.$redis->port.' db:'?></span>
+					<span><?='server ip:'.$server_ip. ' port:'.$port.' db:'?></span>
 					<select class="db" name="db">
 						<?php for($i=0;$i<$databaseCount;$i++):?>
 							<option value="<?=$i?>"<?=$db==$i?' selected':''?>>db <?=$i?></option>

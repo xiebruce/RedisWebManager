@@ -66,4 +66,13 @@ return array (
       '@mojifan/redis' => $vendorDir . '/mojifan/yii2-predis',
     ),
   ),
+  'pavle/yii2-redis' => 
+  array (
+    'name' => 'pavle/yii2-redis',
+    'version' => '1.1.1.0',
+    'alias' => 
+    array (
+      '@pavle/yii/redis' => $vendorDir . '/pavle/yii2-redis/src',
+    ),
+  ),
 );
