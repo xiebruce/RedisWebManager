@@ -2,6 +2,8 @@
 RedisWebManager
 ===============
 ## Preview
+**GIF Demo**: [https://imgur.com/kiYTz0V](https://imgur.com/kiYTz0V)
+
 Home page:
 ![Xnip2019-02-22_17-01-28.png](https://img.xiebruce.top/2019/02/22/3a427db22d0603e50e9e0b9ec9b86020.png)
 
