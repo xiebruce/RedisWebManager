@@ -400,7 +400,6 @@ $valDisplayType = Yii::$app->params['valDisplayType'] ?? 'popup';
         });
 	
         // Preview value of the key
-	    // $('#key-list').on('click','.delete',function (){
         $('#key-list').on('click','.key-name', function (){
             var $this = $(this);
 	        <?php if($valDisplayType=='inline'):?>
@@ -480,6 +479,11 @@ $valDisplayType = Yii::$app->params['valDisplayType'] ?? 'popup';
 
         // click row to check the checkbox
         $('#key-list table tbody').on('click', 'tr', function (e){
+	        //点击查看key的值时，不要选中
+	        if(e.target.className.indexOf('key-name') != -1){
+	        	//这里不能return false，因为return false会让tr不能冒泡，而‘查看key的值’是事件委托到tr的上上层的
+		        return;
+	        }
             var checkbox_obj = $(this).find('input[type="checkbox"]');
             if(checkbox_obj.length){
                 if(checkbox_obj.hasClass('select-all')){
