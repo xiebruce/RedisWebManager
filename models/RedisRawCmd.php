@@ -435,9 +435,15 @@ class RedisRawCmd extends BaseObject {
 		$read = [$this->sock];
 		$write = null;
 		$e = null;
+		// I/O多路复用模型允许我们同时等待多个套接字描述符是否就绪。Linux系统为实现I/O多路复用提供的最常见的一个函数是select函数，该函数允许进程指示内核等待多个事件中的任何一个发生，并只有在一个或多个事件发生或经历一段指定的时间后才唤醒它。
+		// $read 参数用于指定被监控的socket的字符是否已经准备好(即是否已可以读取)
+		// $write 参数用于指定对被监控的socket的写操作是否会被阻塞(由于这里只是读数据，所以写的话传空就行)
+		// $e 参数用于指定对被监控的socket是否有高优先级异常数据(如果有说明发生了异常)，这里我们不做处理，所以传null
+		// $timeout 超时时间，这个没什么好说的，超时了如果还没有数据可以读取，那就返回0
 		$n = stream_select($read, $write, $e, $timeout);
 		$content = '';
 		if($n>0){
+			// fgets() 从指定的文件指针中获取一行数据(可指定要获取的长度)，这里的文件指针就是socket文件
 			while (($buffer = fgets($read[0], $length)) !== false) {
 				$content .= $buffer;
 			}
