@@ -9,6 +9,8 @@ namespace yii\db\mysql;
 
 use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
+use yii\caching\CacheInterface;
+use yii\caching\DbCache;
 use yii\db\Exception;
 use yii\db\Expression;
 use yii\db\Query;
@@ -39,9 +41,6 @@ class QueryBuilder extends \yii\db\QueryBuilder
         Schema::TYPE_FLOAT => 'float',
         Schema::TYPE_DOUBLE => 'double',
         Schema::TYPE_DECIMAL => 'decimal(10,0)',
-        Schema::TYPE_DATETIME => 'datetime',
-        Schema::TYPE_TIMESTAMP => 'timestamp',
-        Schema::TYPE_TIME => 'time',
         Schema::TYPE_DATE => 'date',
         Schema::TYPE_BINARY => 'blob',
         Schema::TYPE_BOOLEAN => 'tinyint(1)',
@@ -49,6 +48,16 @@ class QueryBuilder extends \yii\db\QueryBuilder
         Schema::TYPE_JSON => 'json'
     ];
 
+
+    /**
+     * {@inheritdoc}
+     */
+    public function init()
+    {
+        parent::init();
+
+        $this->typeMap = array_merge($this->typeMap, $this->defaultTimeTypeMap());
+    }
 
     /**
      * {@inheritdoc}
@@ -81,7 +90,7 @@ class QueryBuilder extends \yii\db\QueryBuilder
             $row = array_values($row);
             $sql = $row[1];
         }
-        if (preg_match_all('/^\s*`(.*?)`\s+(.*?),?$/m', $sql, $matches)) {
+        if (preg_match_all('/^\s*[`"](.*?)[`"]\s+(.*?),?$/m', $sql, $matches)) {
             foreach ($matches[1] as $i => $c) {
                 if ($c === $oldName) {
                     return "ALTER TABLE $quotedTable CHANGE "
@@ -271,6 +280,10 @@ class QueryBuilder extends \yii\db\QueryBuilder
         if (empty($uniqueNames)) {
             return $insertSql;
         }
+        if ($updateNames === []) {
+            // there are no columns to update
+            $updateColumns = false;
+        }
 
         if ($updateColumns === true) {
             $updateColumns = [];
@@ -295,11 +308,20 @@ class QueryBuilder extends \yii\db\QueryBuilder
         $definition = trim(preg_replace("/COMMENT '(?:''|[^'])*'/i", '',
             $this->getColumnDefinition($table, $column)));
 
-        return 'ALTER TABLE ' . $this->db->quoteTableName($table)
+        $checkRegex = '/CHECK *(\(([^()]|(?-2))*\))/';
+        $check = preg_match($checkRegex, $definition, $checkMatches);
+        if ($check === 1) {
+            $definition = preg_replace($checkRegex, '', $definition);
+        }
+        $alterSql = 'ALTER TABLE ' . $this->db->quoteTableName($table)
             . ' CHANGE ' . $this->db->quoteColumnName($column)
             . ' ' . $this->db->quoteColumnName($column)
             . (empty($definition) ? '' : ' ' . $definition)
             . ' COMMENT ' . $this->db->quoteValue($comment);
+        if ($check === 1) {
+            $alterSql .= ' ' . $checkMatches[0];
+        }
+        return $alterSql;
     }
 
     /**
@@ -351,7 +373,7 @@ class QueryBuilder extends \yii\db\QueryBuilder
             $row = array_values($row);
             $sql = $row[1];
         }
-        if (preg_match_all('/^\s*`(.*?)`\s+(.*?),?$/m', $sql, $matches)) {
+        if (preg_match_all('/^\s*[`"](.*?)[`"]\s+(.*?),?$/m', $sql, $matches)) {
             foreach ($matches[1] as $i => $c) {
                 if ($c === $column) {
                     return $matches[2][$i];
@@ -362,4 +384,57 @@ class QueryBuilder extends \yii\db\QueryBuilder
         return null;
     }
 
+    /**
+     * Checks the ability to use fractional seconds.
+     *
+     * @return bool
+     * @see https://dev.mysql.com/doc/refman/5.6/en/fractional-seconds.html
+     */
+    private function supportsFractionalSeconds()
+    {
+        // use cache to prevent opening MySQL connection
+        // https://github.com/yiisoft/yii2/issues/13749#issuecomment-481657224
+        $key = [__METHOD__, $this->db->dsn];
+        $cache = null;
+        $schemaCache = (\Yii::$app && is_string($this->db->schemaCache)) ? \Yii::$app->get($this->db->schemaCache, false) : $this->db->schemaCache;
+        // If the `$schemaCache` is an instance of `DbCache` we don't use it to avoid a loop
+        if ($this->db->enableSchemaCache && $schemaCache instanceof CacheInterface && !($schemaCache instanceof DbCache)) {
+            $cache = $schemaCache;
+        }
+        $version = $cache ? $cache->get($key) : null;
+        if (!$version) {
+            $version = $this->db->getSlavePdo()->getAttribute(\PDO::ATTR_SERVER_VERSION);
+            if ($cache) {
+                $cache->set($key, $version, $this->db->schemaCacheDuration);
+            }
+        }
+
+        return version_compare($version, '5.6.4', '>=');
+    }
+
+    /**
+     * Returns the map for default time type.
+     * If the version of MySQL is lower than 5.6.4, then the types will be without fractional seconds,
+     * otherwise with fractional seconds.
+     *
+     * @return array
+     */
+    private function defaultTimeTypeMap()
+    {
+        $map = [
+            Schema::TYPE_DATETIME => 'datetime',
+            Schema::TYPE_TIMESTAMP => 'timestamp',
+            Schema::TYPE_TIME => 'time',
+        ];
+
+        if ($this->supportsFractionalSeconds()) {
+            $map = [
+                Schema::TYPE_DATETIME => 'datetime(0)',
+                Schema::TYPE_TIMESTAMP => 'timestamp(0)',
+                Schema::TYPE_TIME => 'time(0)',
+            ];
+        }
+
+        return $map;
+    }
 }

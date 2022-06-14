@@ -45,10 +45,10 @@ To run tests in Chrome browser you may connect to ChromeDriver directly, without
              port: 9515
              browser: chrome
              capabilities:
-                 chromeOptions: # additional chrome options
+                 "goog:chromeOptions": # additional chrome options
 ```
 
-Additional [Chrome options](https://sites.google.com/a/chromium.org/chromedriver/capabilities) can be set in `chromeOptions` capabilities.
+Additional [Chrome options](https://sites.google.com/a/chromium.org/chromedriver/capabilities) can be set in `goog:chromeOptions` capabilities. Note that Selenium 3.8 renamed this capability from `chromeOptions` to `goog:chromeOptions`.
 
 
 ### PhantomJS
@@ -575,7 +575,7 @@ $I->click('Submit');
 // CSS button
 $I->click('#form input[type=submit]');
 // XPath
-$I->click('//form/*[@type=submit]');
+$I->click('//form/*[@type="submit"]');
 // link in context
 $I->click('Logout', '#nav');
 // using strict locator
@@ -689,7 +689,7 @@ But will ignore strings like:
 For checking the raw source code, use `seeInSource()`.
 
  * `param string` $text
- * `param string` $selector optional
+ * `param array|string` $selector optional
 
 
 ### dontSeeCheckboxIsChecked
@@ -1386,7 +1386,7 @@ But will *not* be true for strings like:
 For checking the raw source code, use `seeInSource()`.
 
  * `param string` $text
- * `param string` $selector optional
+ * `param array|string` $selector optional
 
 
 ### seeCheckboxIsChecked

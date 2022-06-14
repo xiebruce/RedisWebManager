@@ -148,14 +148,14 @@ class GridView extends BaseListView
      *
      * ```php
      * [
-     *     ['class' => SerialColumn::className()],
+     *     ['class' => SerialColumn::class],
      *     [
-     *         'class' => DataColumn::className(), // this line is optional
+     *         'class' => DataColumn::class, // this line is optional
      *         'attribute' => 'name',
      *         'format' => 'text',
      *         'label' => 'Name',
      *     ],
-     *     ['class' => CheckboxColumn::className()],
+     *     ['class' => CheckboxColumn::class],
      * ]
      * ```
      *
@@ -249,6 +249,11 @@ class GridView extends BaseListView
      */
     public $filterErrorOptions = ['class' => 'help-block'];
     /**
+     * @var bool whatever to apply filters on losing focus. Leaves an ability to manage filters via yiiGridView JS
+     * @since 2.0.16
+     */
+    public $filterOnFocusOut = true;
+    /**
      * @var string the layout that determines how different sections of the grid view should be organized.
      * The following tokens will be replaced with the corresponding section contents:
      *
@@ -288,10 +293,10 @@ class GridView extends BaseListView
      */
     public function run()
     {
-        $id = $this->options['id'];
-        $options = Json::htmlEncode($this->getClientOptions());
         $view = $this->getView();
         GridViewAsset::register($view);
+        $id = $this->options['id'];
+        $options = Json::htmlEncode(array_merge($this->getClientOptions(), ['filterOnFocusOut' => $this->filterOnFocusOut]));
         $view->registerJs("jQuery('#$id').yiiGridView($options);");
         parent::run();
     }
@@ -354,13 +359,13 @@ class GridView extends BaseListView
 
         $tableFooter = false;
         $tableFooterAfterBody = false;
-        
+
         if ($this->showFooter) {
             if ($this->placeFooterAfterBody) {
                 $tableFooterAfterBody = $this->renderTableFooter();
             } else {
                 $tableFooter = $this->renderTableFooter();
-            }	        
+            }
         }
 
         $content = array_filter([

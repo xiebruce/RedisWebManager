@@ -10,9 +10,10 @@ namespace yii\redis;
 use Yii;
 use yii\base\InvalidConfigException;
 use yii\di\Instance;
+use yii\mutex\RetryAcquireTrait;
 
 /**
- * Redis Mutex implements a mutex component using [redis](http://redis.io/) as the storage medium.
+ * Redis Mutex implements a mutex component using [redis](https://redis.io/) as the storage medium.
  *
  * Redis Mutex requires redis version 2.6.12 or higher to work properly.
  *
@@ -50,7 +51,7 @@ use yii\di\Instance;
  * ```
  *
  * @see \yii\mutex\Mutex
- * @see http://redis.io/topics/distlock
+ * @see https://redis.io/topics/distlock
  *
  * @author Sergey Makinen <sergey@makinen.ru>
  * @author Alexander Zhuravlev <axelhex@gmail.com>
@@ -58,6 +59,8 @@ use yii\di\Instance;
  */
 class Mutex extends \yii\mutex\Mutex
 {
+    use RetryAcquireTrait;
+
     /**
      * @var int the number of seconds in which the lock will be auto released.
      */
@@ -109,16 +112,15 @@ class Mutex extends \yii\mutex\Mutex
     {
         $key = $this->calculateKey($name);
         $value = Yii::$app->security->generateRandomString(20);
-        $waitTime = 0;
-        while (!$this->redis->executeCommand('SET', [$key, $value, 'NX', 'PX', (int) ($this->expire * 1000)])) {
-            $waitTime++;
-            if ($waitTime > $timeout) {
-                return false;
-            }
-            sleep(1);
+
+        $result = $this->retryAcquire($timeout, function () use ($key, $value) {
+            return $this->redis->executeCommand('SET', [$key, $value, 'NX', 'PX', (int) ($this->expire * 1000)]);
+        });
+
+        if ($result) {
+            $this->_lockValues[$name] = $value;
         }
-        $this->_lockValues[$name] = $value;
-        return true;
+        return $result;
     }
 
     /**
@@ -135,17 +137,20 @@ else
     return 0
 end
 LUA;
-        if (!isset($this->_lockValues[$name]) || !$this->redis->executeCommand('EVAL', [
+        if (
+            !isset($this->_lockValues[$name])
+            || !$this->redis->executeCommand('EVAL', [
                 $releaseLuaScript,
                 1,
                 $this->calculateKey($name),
-                $this->_lockValues[$name]
-            ])) {
+                $this->_lockValues[$name],
+            ])
+        ) {
             return false;
-        } else {
-            unset($this->_lockValues[$name]);
-            return true;
         }
+
+        unset($this->_lockValues[$name]);
+        return true;
     }
 
     /**

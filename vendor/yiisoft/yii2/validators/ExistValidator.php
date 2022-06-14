@@ -19,6 +19,7 @@ use yii\db\QueryInterface;
  *
  * ExistValidator checks if the value being validated can be found in the table column specified by
  * the ActiveRecord class [[targetClass]] and the attribute [[targetAttribute]].
+ * Since version 2.0.14 you can use more convenient attribute [[targetRelation]]
  *
  * This validator is often used to verify that a foreign key contains a value
  * that can be found in the foreign table.
@@ -36,6 +37,10 @@ use yii\db\QueryInterface;
  * ['a1', 'exist', 'targetAttribute' => ['a1', 'a2']]
  * // a1 needs to exist by checking the existence of both a2 and a3 (using a1 value)
  * ['a1', 'exist', 'targetAttribute' => ['a2', 'a1' => 'a3']]
+ * // type_id needs to exist in the column "id" in the table defined in ProductType class
+ * ['type_id', 'exist', 'targetClass' => ProductType::class, 'targetAttribute' => ['type_id' => 'id']],
+ * // the same as the previous, but using already defined relation "type"
+ * ['type_id', 'exist', 'targetRelation' => 'type'],
  * ```
  *
  * @author Qiang Xue <qiang.xue@gmail.com>
@@ -126,14 +131,14 @@ class ExistValidator extends Validator
             $relationQuery->andWhere($this->filter);
         }
 
-        if ($this->forceMasterDb && method_exists($model::getDb(), 'useMaster')) {
-            $model::getDb()->useMaster(function() use ($relationQuery, &$exists) {
-                $exists = $relationQuery->exists();
+        $connection = $model::getDb();
+        if ($this->forceMasterDb && method_exists($connection, 'useMaster')) {
+            $exists = $connection->useMaster(function() use ($relationQuery) {
+                return $relationQuery->exists();
             });
         } else {
             $exists = $relationQuery->exists();
         }
-
 
         if (!$exists) {
             $this->addError($model, $attribute, $this->message);
@@ -164,7 +169,7 @@ class ExistValidator extends Validator
             $conditions[] = $params;
         }
 
-        $targetClass = $this->targetClass === null ? get_class($model) : $this->targetClass;
+        $targetClass = $this->getTargetClass($model);
         $query = $this->createQuery($targetClass, $conditions);
 
         if (!$this->valueExists($targetClass, $query, $model->$attribute)) {
@@ -241,9 +246,9 @@ class ExistValidator extends Validator
     }
 
     /**
-     * Check whether value exists in target table
+     * Check whether value exists in target table.
      *
-     * @param string $targetClass
+     * @param string $targetClass the model
      * @param QueryInterface $query
      * @param mixed $value the value want to be checked
      * @return bool
@@ -254,8 +259,8 @@ class ExistValidator extends Validator
         $exists = false;
 
         if ($this->forceMasterDb && method_exists($db, 'useMaster')) {
-            $db->useMaster(function ($db) use ($query, $value, &$exists) {
-                $exists = $this->queryValueExists($query, $value);
+            $exists = $db->useMaster(function () use ($query, $value) {
+                return $this->queryValueExists($query, $value);
             });
         } else {
             $exists = $this->queryValueExists($query, $value);
@@ -266,7 +271,7 @@ class ExistValidator extends Validator
 
 
     /**
-     * Run query to check if value exists
+     * Run query to check if value exists.
      *
      * @param QueryInterface $query
      * @param mixed $value the value to be checked
@@ -275,7 +280,7 @@ class ExistValidator extends Validator
     private function queryValueExists($query, $value)
     {
         if (is_array($value)) {
-            return $query->count("DISTINCT [[$this->targetAttribute]]") == count($value) ;
+            return $query->count("DISTINCT [[$this->targetAttribute]]") == count(array_unique($value));
         }
         return $query->exists();
     }

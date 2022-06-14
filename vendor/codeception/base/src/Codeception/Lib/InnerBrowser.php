@@ -62,7 +62,16 @@ class InnerBrowser extends Module implements Web, PageSourceSaver, ElementLocato
             return;
         }
         $filename = preg_replace('~\W~', '.', Descriptor::getTestSignatureUnique($test));
-        $filename = mb_strcut($filename, 0, 244, 'utf-8') . '.fail.html';
+        
+        $extensions = ['application/json' => 'json', 'text/xml' => 'xml', 'application/xml' => 'xml'];
+        
+        $internalResponse = $this->client->getInternalResponse();
+        
+        $responseContentType = $internalResponse ? $internalResponse->getHeader('content-type') : null;
+        
+        $extension = isset($extensions[$responseContentType]) ? $extensions[$responseContentType] : 'html';
+        
+        $filename = mb_strcut($filename, 0, 244, 'utf-8') . '.fail.' . $extension;
         $this->_savePageSource($report = codecept_output_dir() . $filename);
         $test->getMetadata()->addReport('html', $report);
     }
@@ -822,6 +831,7 @@ class InnerBrowser extends Module implements Web, PageSourceSaver, ElementLocato
      */
     protected function proceedSubmitForm(Crawler $frmCrawl, array $params, $button = null)
     {
+        $url = null;
         $form = $this->getFormFor($frmCrawl);
         $defaults = $this->getFormValuesFor($form);
         $merged = array_merge($defaults, $params);
@@ -834,10 +844,17 @@ class InnerBrowser extends Module implements Web, PageSourceSaver, ElementLocato
             ));
             if (count($btnCrawl)) {
                 $requestParams[$button] = $btnCrawl->attr('value');
+                $formaction = $btnCrawl->attr('formaction');
+                if ($formaction) {
+                    $url = $formaction;
+                }
             }
         }
 
-        $url = $this->getFormUrl($frmCrawl);
+        if (!$url) {
+            $url = $this->getFormUrl($frmCrawl);
+        }
+        
         if (strcasecmp($form->getMethod(), 'GET') === 0) {
             $url = Uri::mergeUrls($url, '?' . http_build_query($requestParams));
         }

@@ -8,19 +8,23 @@
 namespace yii\redis;
 
 use Yii;
+use yii\db\Exception;
 use yii\di\Instance;
 
 /**
- * Redis Cache implements a cache application component based on [redis](http://redis.io/) key-value store.
+ * Redis Cache implements a cache application component based on [redis](https://redis.io/) key-value store.
  *
  * Redis Cache requires redis version 2.6.12 or higher to work properly.
  *
- * It needs to be configured with a redis [[Connection]] that is also configured as an application component.
- * By default it will use the `redis` application component.
+ * It needs to be configured with a redis [[Connection]]. By default it will use the `redis` application component.
  *
- * See [[Cache]] manual for common cache operations that redis Cache supports.
+ * > Note: It is recommended to use separate [[Connection::$database|database]] for cache and do not share it with
+ * > other components. If you need to share database, you should set [[$shareDatabase]] to `true` and make sure that
+ * > [[$keyPrefix]] has unique value which will allow to distinguish between cache keys and other data in database.
  *
- * Unlike the [[Cache]], redis Cache allows the expire parameter of [[set]], [[add]], [[mset]] and [[madd]] to
+ * See [[yii\caching\Cache]] manual for common cache operations that redis Cache supports.
+ *
+ * Unlike the [[yii\caching\Cache]], redis Cache allows the expire parameter of [[set]], [[add]], [[mset]] and [[madd]] to
  * be a floating point number, so you may specify the time in milliseconds (e.g. 0.1 will be 100 milliseconds).
  *
  * To use redis Cache as the cache application component, configure the application as follows,
@@ -75,6 +79,22 @@ use yii\di\Instance;
  * ]
  * ~~~
  *
+ * If you're using redis in cluster mode and want to use `MGET` and `MSET` effectively, you will need to supply a
+ * [hash tag](https://redis.io/topics/cluster-spec#keys-hash-tags) to allocate cache keys to the same hash slot.
+ *
+ * ~~~
+ * \Yii::$app->cache->multiSet([
+ *     'posts{user1}' => 123,
+ *     'settings{user1}' => [
+ *         'showNickname' => false,
+ *         'sortBy' => 'created_at',
+ *     ],
+ *     'unreadMessages{user1}' => 5,
+ * ]);
+ * ~~~
+ *
+ * @property-read bool $isCluster Whether redis is running in cluster mode or not.
+ *
  * @author Carsten Brandt <mail@cebe.cc>
  * @since 2.0
  */
@@ -113,11 +133,35 @@ class Cache extends \yii\caching\Cache
      * @see $enableReplicas
      */
     public $replicas = [];
+    /**
+     * @var bool|null force cluster mode, don't check on every request. If this is null, cluster mode will be checked
+     * once per request whenever the cache is accessed. To disable the check, set to true if cluster mode
+     * should be enabled, or false if it should be disabled.
+     * @since 2.0.11
+     */
+    public $forceClusterMode;
+    /**
+     * @var bool whether redis [[Connection::$database|database]] is shared and can contain other data than cache.
+     * Setting this to `true` will change [[flush()]] behavior - instead of using [`FLUSHDB`](https://redis.io/commands/flushdb)
+     * command, component will iterate through all keys in database and remove only these with matching [[$keyPrefix]].
+     * Note that this will no longer be an atomic operation and it is much less efficient than `FLUSHDB` command. It is
+     * recommended to use separate database for cache and leave this value as `false`.
+     * @since 2.0.12
+     */
+    public $shareDatabase = false;
 
     /**
      * @var Connection currently active connection.
      */
     private $_replica;
+    /**
+     * @var bool remember if redis is in cluster mode for the whole request
+     */
+    private $_isCluster;
+    /**
+     * @var bool if hash tags were supplied for a MGET/MSET operation
+     */
+    private $_hashTagAvailable = false;
 
 
     /**
@@ -159,6 +203,10 @@ class Cache extends \yii\caching\Cache
      */
     protected function getValues($keys)
     {
+        if ($this->isCluster && !$this->_hashTagAvailable) {
+            return parent::getValues($keys);
+        }
+
         $response = $this->getReplica()->executeCommand('MGET', $keys);
         $result = [];
         $i = 0;
@@ -166,7 +214,24 @@ class Cache extends \yii\caching\Cache
             $result[$key] = $response[$i++];
         }
 
+        $this->_hashTagAvailable = false;
+
         return $result;
+    }
+
+    public function buildKey($key)
+    {
+        if (
+            is_string($key)
+            && $this->isCluster
+            && preg_match('/^(.*)({.+})(.*)$/', $key, $matches) === 1) {
+
+            $this->_hashTagAvailable = true;
+
+            return parent::buildKey($matches[1] . $matches[3]) . $matches[2];
+        }
+
+        return parent::buildKey($key);
     }
 
     /**
@@ -176,11 +241,11 @@ class Cache extends \yii\caching\Cache
     {
         if ($expire == 0) {
             return (bool) $this->redis->executeCommand('SET', [$key, $value]);
-        } else {
-            $expire = (int) ($expire * 1000);
-
-            return (bool) $this->redis->executeCommand('SET', [$key, $value, 'PX', $expire]);
         }
+
+        $expire = (int) ($expire * 1000);
+
+        return (bool) $this->redis->executeCommand('SET', [$key, $value, 'PX', $expire]);
     }
 
     /**
@@ -188,6 +253,10 @@ class Cache extends \yii\caching\Cache
      */
     protected function setValues($data, $expire)
     {
+        if ($this->isCluster && !$this->_hashTagAvailable) {
+            return parent::setValues($data, $expire);
+        }
+
         $args = [];
         foreach ($data as $key => $value) {
             $args[] = $key;
@@ -215,7 +284,39 @@ class Cache extends \yii\caching\Cache
             }
         }
 
+        $this->_hashTagAvailable = false;
+
         return $failedKeys;
+    }
+
+    /**
+     * Returns `true` if the redis extension is forced to run in cluster mode through config or the redis command
+     * `CLUSTER INFO` executes successfully, `false` otherwise.
+     *
+     * Setting [[forceClusterMode]] to either `true` or `false` is preferred.
+     * @return bool whether redis is running in cluster mode or not
+     * @since 2.0.11
+     */
+    public function getIsCluster()
+    {
+        if ($this->forceClusterMode !== null) {
+            return $this->forceClusterMode;
+        }
+
+        if ($this->_isCluster === null) {
+            $this->_isCluster = false;
+            try {
+                $this->redis->executeCommand('CLUSTER INFO');
+                $this->_isCluster = true;
+            } catch (Exception $exception) {
+                // if redis is running without cluster support, this command results in:
+                // `ERR This instance has cluster support disabled`
+                // and [[Connection::executeCommand]] throws an exception
+                // we want to ignore it
+            }
+        }
+
+        return $this->_isCluster;
     }
 
     /**
@@ -225,11 +326,11 @@ class Cache extends \yii\caching\Cache
     {
         if ($expire == 0) {
             return (bool) $this->redis->executeCommand('SET', [$key, $value, 'NX']);
-        } else {
-            $expire = (int) ($expire * 1000);
-
-            return (bool) $this->redis->executeCommand('SET', [$key, $value, 'PX', $expire, 'NX']);
         }
+
+        $expire = (int) ($expire * 1000);
+
+        return (bool) $this->redis->executeCommand('SET', [$key, $value, 'PX', $expire, 'NX']);
     }
 
     /**
@@ -245,6 +346,19 @@ class Cache extends \yii\caching\Cache
      */
     protected function flushValues()
     {
+        if ($this->shareDatabase) {
+            $cursor = 0;
+            do {
+                list($cursor, $keys) = $this->redis->scan($cursor, 'MATCH', $this->keyPrefix . '*');
+                $cursor = (int) $cursor;
+                if (!empty($keys)) {
+                    $this->redis->executeCommand('DEL', $keys);
+                }
+            } while ($cursor !== 0);
+
+            return true;
+        }
+
         return $this->redis->executeCommand('FLUSHDB');
     }
 

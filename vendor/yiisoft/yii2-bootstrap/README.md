@@ -6,7 +6,7 @@
     <br>
 </p>
 
-This is the Twitter Bootstrap extension for [Yii framework 2.0](http://www.yiiframework.com). It encapsulates [Bootstrap](http://getbootstrap.com/) components
+This is the Twitter Bootstrap extension for [Yii framework 2.0](http://www.yiiframework.com). It encapsulates [Bootstrap 3](http://getbootstrap.com/) components
 and plugins in terms of Yii widgets, and thus makes using Bootstrap components/plugins
 in Yii applications extremely easy.
 
@@ -16,7 +16,7 @@ Documentation is at [docs/guide/README.md](docs/guide/README.md).
 
 [![Latest Stable Version](https://poser.pugx.org/yiisoft/yii2-bootstrap/v/stable.png)](https://packagist.org/packages/yiisoft/yii2-bootstrap)
 [![Total Downloads](https://poser.pugx.org/yiisoft/yii2-bootstrap/downloads.png)](https://packagist.org/packages/yiisoft/yii2-bootstrap)
-[![Build Status](https://travis-ci.org/yiisoft/yii2-bootstrap.svg?branch=master)](https://travis-ci.org/yiisoft/yii2-bootstrap)
+[![Build Status](https://github.com/yiisoft/yii2-bootstrap/workflows/build/badge.svg)](https://github.com/yiisoft/yii2-bootstrap/actions)
 
 
 Installation

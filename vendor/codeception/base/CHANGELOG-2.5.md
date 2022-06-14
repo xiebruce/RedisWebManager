@@ -1,3 +1,62 @@
+#### 2.5.6
+
+* [WebDriver] Fixed `loadSessionSnapshot` with php-webdriver 1.1.3 by @Naktibalda.
+* [WebDriver] Avoid removing required fields in cookies. #5470 by @JorisVanEijden
+* [PhpBrowser][Frameworks] Support for `formaction` attribute in `button` to submit forms. By @Dezzpil
+* [FTP] Updated to phpseclib v2 constants
+* Fixes: Gherkin Scenarios not loading when specified in group file by @mozillalives. See #5457
+
+
+#### 2.5.5
+
+* [Laravel] Fix missing declaration shouldReport in Laravel 5.8 by @edno
+* [Lumen] add support for Laravel\Lumen\Application::boot by @lendormi
+* [WebDriver] Fixed SetCookie for chromedriver 2.46+ by @JorisVanEijden
+* [ZendExpressive] Fixed recreateApplicationBetweenRequests option, by @artmnv
+* [Gherkin] Add possibility to dynamically load contexts (#5409) by @hansdubois
+* [Build command] Fixed message printing number of methods in actor class
+* Documented usage of IS NULL in Doctrine module by @ThomasLandauer
+
+#### 2.5.4
+
+* Restored compatibility with vlucas/phpdotenv v2
+* [Doctrine] Fixed cleanup issue #5326
+
+#### 2.5.3
+
+* [Db] cleanup database if populator is used
+* [FTP] Compatibility with phpseclib v2 by @kardagan
+* [JsonType] Fixed issue #5230 Dropped filters after a string:regex by @ellisgl
+* [Symfony] Fixed persistent service functionality for Symfony 3 by @Naktibalda
+* [ZendExpressive] Set Cookie header in request by @Naktibalda 
+* Updated vlucas/phpdotenv package to ^3.0 version by @KartaviK
+* Documentation improvements by @chrisaligent @richleland @SanzhiyevMergen @sdlins
+
+
+#### 2.5.2
+
+* [ZendExppressive] Support for Zend Expressive v3 by @Naktibalda 
+* [ZendExppressive] Added options to reload application between tests and between requests by @Naktibalda
+* [Symfony] Fix "already initialized service", "reboot kernel issue" #5262 by @gdmfx
+* {Yii2] Prevent NPE #5259 by @SilverFire
+* [Db] isPopulated method was hidden by renaming to _isPopulated by @Naktibalda
+* [Db] don't clear database for empty dump by @Slamdunk 
+* [AMQP] added methods `seeQueueIsEmpty`, `dontSeeQueueIsEmpty`, `seeNumberOfMessagesInQueue`, `scheduleQueueCleanup` method by @kardagan
+* [REST][PhpBrowser][Frameworks] Save page source as .fail.json or .fail.xml depending on content type, by @freiondrej 
+* [Doctrine2] Cleanup property works after on reconfigure #5250 by @joelmedeiros
+* [JsonType] Allow to use : in regex filter (#5273) by @ellisgl
+* [WebDriver] Print curl error to debug output if WebDriver failed to connect #5315 by @Naktibalda
+* [Logger] Ignores empty context and extra fields, by @siad007 
+* [Recorder] Improved steps ignoring in Recorder extension with meta steps and annotations support #5210 by @sspat.
+* `@dataProvider` works with yield/generators #5271 by @burned42
+* Fixed issue ArrayContainsComparator do not Intersect correctly Empty expected nested array #5303 by @malinink
+* Fixed issue of steps with mocked objects #5163 by @dh9325
+* Added Environment Name To Descriptor Unique Signatures #5294 by @Tenzian
+* Run command: Added `--phpunit-xml` option, which produces xml report having the same structure as PhpUnit's #5004 by @Naktibalda 
+* Bootstrap command: Changed namespace shortcut to `-s` #5275 by @Naktibalda
+* Improved the docs; by @h311ion, @gimler, @picass0, @josephzidell
+
+
 #### 2.5.1
 
 * Recorder extension improvements by @OneEyedSpaceFish. See #5177:
@@ -10,7 +69,7 @@
   * the ability not to display any Unicode characters if ANSI only output is requested
   * the ability not to display any colors in output if no-colors is requested
   * the ability to change colors in the generated list based on configuration
-* [Db] Made `_loadDump` unconditional like it was in 2.4. Fixed #5195 by @Naktibala
+* [Db] Made `_loadDump` unconditional like it was in 2.4. Fixed #5195 by @Naktibalda
 * [Db] Allows to specify more than one dump file. See #5220 by @Fenikkusu
 * [WebDriver] Added `waitForElementClickable` by @FatBoyXPC 
 * Code coverage: added `work_dir` config option to map remote paths to local. See #5225 by @Fenikkusu 

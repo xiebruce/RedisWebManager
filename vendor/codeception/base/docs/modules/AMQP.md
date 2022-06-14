@@ -111,6 +111,20 @@ $I->declareQueue(
  * `return` mixed|null
 
 
+### dontSeeQueueIsEmpty
+ 
+Checks if queue is not empty.
+
+``` php
+<?php
+$I->pushToQueue('queue.emails', 'Hello, davert');
+$I->dontSeeQueueIsEmpty('queue.emails');
+?>
+```
+
+ * `param string` $queue
+
+
 ### grabMessageFromQueue
  
 Takes last message from queue.
@@ -182,6 +196,13 @@ $I->pushToQueue('queue.jobs', new AMQPMessage('create'));
  * `param string|\PhpAmqpLib\Message\AMQPMessage` $message
 
 
+### scheduleQueueCleanup
+ 
+Add a queue to purge list
+
+ * `param string` $queue
+
+
 ### seeMessageInQueueContainsText
  
 Checks if message containing text received.
@@ -198,5 +219,36 @@ $I->seeMessageInQueueContainsText('queue.emails','davert');
 
  * `param string` $queue
  * `param string` $text
+
+
+### seeNumberOfMessagesInQueue
+ 
+Checks that queue have expected number of message
+
+``` php
+<?php
+$I->pushToQueue('queue.emails', 'Hello, davert');
+$I->seeNumberOfMessagesInQueue('queue.emails',1);
+?>
+```
+
+ * `param string` $queue
+ * `param int` $expected
+
+
+### seeQueueIsEmpty
+ 
+Checks that queue is empty
+
+``` php
+<?php
+$I->pushToQueue('queue.emails', 'Hello, davert');
+$I->purgeQueue('queue.emails');
+$I->seeQueueIsEmpty('queue.emails');
+?>
+```
+
+ * `param string` $queue
+ * `param int` $expected
 
 <p>&nbsp;</p><div class="alert alert-warning">Module reference is taken from the source code. <a href="https://github.com/Codeception/Codeception/tree/2.5/src/Codeception/Module/AMQP.php">Help us to improve documentation. Edit module reference</a></div>

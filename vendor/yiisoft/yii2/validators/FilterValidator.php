@@ -75,6 +75,7 @@ class FilterValidator extends Validator
     {
         $value = $model->$attribute;
         if (!$this->skipOnArray || !is_array($value)) {
+            $value = isset($value) ? $value : '';
             $model->$attribute = call_user_func($this->filter, $value);
         }
     }
@@ -91,7 +92,7 @@ class FilterValidator extends Validator
         ValidationAsset::register($view);
         $options = $this->getClientOptions($model, $attribute);
 
-        return 'value = yii.validation.trim($form, attribute, ' . json_encode($options, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . ');';
+        return 'value = yii.validation.trim($form, attribute, ' . json_encode($options, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . ', value);';
     }
 
     /**

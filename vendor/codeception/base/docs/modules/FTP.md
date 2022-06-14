@@ -22,17 +22,15 @@ connection to SFTP uses [phpseclib](http://phpseclib.sourceforge.net/) pulled in
 For SFTP, add [phpseclib](http://phpseclib.sourceforge.net/) to require list.
 ```
 "require": {
- "phpseclib/phpseclib": "0.3.6"
+ "phpseclib/phpseclib": "^2.0.14"
 }
 ```
 
 ## Status
 
-* Maintainer: **nathanmac**
 * Stability:
     - FTP: **stable**
     - SFTP: **stable**
-* Contact: nathan.macnamara@outlook.com
 
 ## Config
 

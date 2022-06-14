@@ -1,6 +1,6 @@
 <p align="center">
     <a href="http://redis.io/" target="_blank" rel="external">
-        <img src="http://download.redis.io/logocontest/82.png" height="100px">
+        <img src="http://download.redis.io/redis.png" height="100px">
     </a>
     <h1 align="center">Redis Cache, Session and ActiveRecord for Yii 2</h1>
     <br>
@@ -16,7 +16,7 @@ Documentation is at [docs/guide/README.md](docs/guide/README.md).
 
 [![Latest Stable Version](https://poser.pugx.org/yiisoft/yii2-redis/v/stable.png)](https://packagist.org/packages/yiisoft/yii2-redis)
 [![Total Downloads](https://poser.pugx.org/yiisoft/yii2-redis/downloads.png)](https://packagist.org/packages/yiisoft/yii2-redis)
-[![Build Status](https://travis-ci.org/yiisoft/yii2-redis.svg?branch=master)](https://travis-ci.org/yiisoft/yii2-redis)
+[![Build status](https://github.com/yiisoft/yii2-redis/workflows/build/badge.svg)](https://github.com/yiisoft/yii2-redis/actions?query=workflow%3Abuild)
 
 
 Requirements
@@ -60,5 +60,28 @@ return [
             'database' => 0,
         ],
     ]
+];
+```
+
+**SSL configuration** example:
+```php
+return [
+    //....
+    'components' => [
+        'redis' => [
+            'class' => 'yii\redis\Connection',
+            'hostname' => 'localhost',
+            'port' => 6380,
+            'database' => 0,
+            'useSSL' => true,
+            // Use contextOptions for more control over the connection (https://www.php.net/manual/en/context.php), not usually needed
+            'contextOptions' => [
+                'ssl' => [
+                    'local_cert' => '/path/to/local/certificate',
+                    'local_pk' => '/path/to/local/private_key',
+                ],
+            ],
+        ],
+    ],
 ];
 ```
