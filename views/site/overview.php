@@ -44,7 +44,7 @@ if($server_ip=='127.0.0.1'){
 				</ul>
 			</li>
 		<?php else:?>
-			<li<?=$i==0?' class="active"':''?>>
+			<li<?= $i==0 ? ' class="active"' : ''?>>
 				<a href="#<?=$key?>" data-toggle="tab"><?=$key?></a>
 			</li>
 		<?php $i++; endif;?>

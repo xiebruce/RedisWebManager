@@ -61,9 +61,9 @@ AppAsset::register($this);
     echo Nav::widget([
 	    'options' => ['class' => 'navbar-nav navbar-left'],
 	    'items' => [
+            ['label' => 'Key-List', 'url' => ['/site/index']],
 		    ['label' => 'Overview', 'url' => ['/site/overview']],
 		    ['label' => 'Redis-cli', 'url' => ['/site/redis-cli']],
-		    // ['label' => 'Contact', 'url' => ['/site/contact']],
 	    ],
     ]);
     echo Nav::widget([
